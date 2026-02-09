@@ -1,0 +1,93 @@
+name: home_cloud
+description: A new Flutter project for Home Cloud.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  
+  # State Management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Navigation
+  go_router: ^13.2.0
+
+  # Networking
+  dio: ^5.4.1
+
+  # UI/Assets
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.0
+  percent_indicator: ^4.2.3
+  cached_network_image: ^3.3.1
+  
+  # Media
+  video_player: ^2.8.3
+  chewie: ^1.7.5
+  audioplayers: ^6.0.0
+  
+  # File & System
+  file_picker: ^8.0.0
+  path_provider: ^2.1.2
+  open_filex: ^4.4.0
+  permission_handler: ^11.3.0
+  
+  # Utils
+  intl: ^0.19.0
+  shared_preferences: ^2.5.4
+  video_player_win: ^3.2.2
+  window_manager: ^0.5.1
+  watcher: ^1.2.1
+  tray_manager: ^0.5.2
+  launch_at_startup: ^0.5.1
+  path: ^1.9.1
+  package_info_plus: ^9.0.0
+  workmanager: ^0.9.0
+  device_info_plus: ^12.3.0
+  flutter_foreground_task: ^9.2.0
+  flutter_local_notifications: ^19.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+  flutter_launcher_icons: ^0.13.1
+  build_runner: ^2.4.8
+  riverpod_generator: ^2.4.0
+  custom_lint: ^0.6.2
+  riverpod_lint: ^2.3.10
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/icon/
+  
+  fonts:
+    - family: Plus Jakarta Sans
+      fonts:
+        - asset: font/open_sans_medium.ttf
+          weight: 500
+        - asset: font/open_sans_semibold.ttf
+          weight: 600
+        - asset: font/open_sans_bold.ttf
+          weight: 700
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/icon/app_logo.png"
+  adaptive_icon_background: "#FFFFFF"
+
+
+  windows:
+    generate: true
+    image_path: "assets/icon/app_logo.png"
+    icon_size: 256
