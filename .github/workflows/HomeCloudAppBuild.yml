@@ -52,6 +52,15 @@ jobs:
           name: windows-release
           path: HomeCloudApp/build/windows/x64/runner/Release
 
+      - name: Create Windows Installer (MSIX)
+        run: dart run msix:create
+
+      - name: Upload Windows MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: home-cloud-app-windows-msix
+          path: HomeCloudApp/build/windows/x64/runner/Release/*.msix
+
       - name: Install Inno Setup
         run: choco install innosetup
 
@@ -102,11 +111,17 @@ jobs:
           pod install
       - name: Build iOS (no-codesign)
         run: flutter build ios --release --no-codesign
+      - name: Create IPA
+        run: |
+          mkdir -p Payload
+          mv build/ios/iphoneos/Runner.app Payload/
+          zip -r HomeCloudApp.ipa Payload
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-release
-          path: HomeCloudApp/build/ios/iphoneos
+          path: HomeCloudApp/HomeCloudApp.ipa
 
   release:
     needs: [build-android, build-windows, build-linux, build-ios]
@@ -121,8 +136,9 @@ jobs:
         with:
           files: |
             android-release/*.apk
+            home-cloud-app-windows-msix/*.msix
             windows-installer/*.exe
             linux-release/*.zip
-            ios-release/**
+            ios-release/*.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
