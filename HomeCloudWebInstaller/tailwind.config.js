@@ -8,13 +8,13 @@ export default {
         extend: {
             colors: {
                 primary: {
-                    DEFAULT: '#2563EB', // Blue 600 - Vibrant and accessible
-                    dark1: '#1D4ED8',   // Blue 700
-                    dark2: '#1E40AF',   // Blue 800
-                    dark3: '#1E3A8A',   // Blue 900
-                    light1: '#3B82F6',  // Blue 500
-                    light2: '#60A5FA',  // Blue 400
-                    light3: '#93C5FD',  // Blue 300
+                    DEFAULT: '#4A6FA5',
+                    dark1: '#416291',
+                    dark2: '#38547C',
+                    dark3: '#334C71',
+                    light1: '#5A7CAD',
+                    light2: '#6988B4',
+                    light3: '#7793BB',
                 },
                 textBlack: '#0F172A',   // Slate 900 - Richer than pure black
                 gray: {

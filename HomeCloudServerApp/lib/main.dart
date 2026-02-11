@@ -7,6 +7,7 @@ import 'package:launch_at_startup/launch_at_startup.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
+import 'features/dashboard/providers/server_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,31 +24,6 @@ void main() async {
     }
 
     await windowManager.ensureInitialized();
-
-    try {
-      await trayManager.setIcon(
-        Platform.isWindows
-            ? 'assets/icon/app_logo.png'
-            : 'assets/icon/app_logo.png',
-      );
-
-      final Menu menu = Menu(
-        items: [
-          MenuItem(
-            key: 'show_window',
-            label: 'Show Window',
-          ),
-          MenuItem.separator(),
-          MenuItem(
-            key: 'exit_app',
-            label: 'Exit',
-          ),
-        ],
-      );
-      await trayManager.setContextMenu(menu);
-    } catch (e) {
-      debugPrint('Tray icon initialization failed: $e');
-    }
 
     WindowOptions windowOptions = const WindowOptions(
       size: Size(1280, 800),
@@ -82,6 +58,7 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
     super.initState();
     trayManager.addListener(this);
     windowManager.addListener(this);
+    _initTray();
   }
 
   @override
@@ -102,12 +79,62 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
   }
 
   @override
-  void onTrayMenuItemClick(MenuItem item) {
-    if (item.key == 'show_window') {
-      windowManager.show();
-    } else if (item.key == 'exit_app') {
-      exit(0);
+  void onTrayMenuItemClick(MenuItem item) async {
+    final serverService = ref.read(serverServiceProvider);
+
+    switch (item.key) {
+      case 'start_server':
+        await serverService.start();
+        break;
+      case 'stop_server':
+        await serverService.stop();
+        break;
+      case 'restart_server':
+        await serverService.restart();
+        break;
+      case 'open_app':
+        windowManager.show();
+        break;
+      case 'exit_app':
+        await serverService.stop();
+        windowManager.destroy();
+        break;
     }
+  }
+
+  Future<void> _initTray() async {
+    await trayManager.setIcon(
+      Platform.isWindows
+          ? 'assets/icon/app_logo.png'
+          : 'assets/icon/app_logo.png',
+    );
+
+    final Menu menu = Menu(
+      items: [
+        MenuItem(
+          key: 'start_server',
+          label: 'Start Server',
+        ),
+        MenuItem(
+          key: 'stop_server',
+          label: 'Stop Server',
+        ),
+        MenuItem(
+          key: 'restart_server',
+          label: 'Restart Server',
+        ),
+        MenuItem.separator(),
+        MenuItem(
+          key: 'open_app',
+          label: 'Open App',
+        ),
+        MenuItem(
+          key: 'exit_app',
+          label: 'Exit',
+        ),
+      ],
+    );
+    await trayManager.setContextMenu(menu);
   }
 
   @override

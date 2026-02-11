@@ -9,7 +9,7 @@ const About = () => {
             step: '01',
             title: t.about.step1Title,
             description: t.about.step1Desc,
-            color: 'from-blue-500 to-indigo-600',
+            color: 'from-primary to-primary-dark1',
         },
         {
             step: '02',
@@ -28,7 +28,6 @@ const About = () => {
     const techStack = [
         { name: 'Flutter', description: 'Cross-platform mobile & desktop framework', icon: '📱', color: 'bg-blue-50 text-blue-500' },
         { name: 'Go', description: 'High-performance backend server', icon: '🚀', color: 'bg-cyan-50 text-cyan-500' },
-        { name: 'SQLite', description: 'Lightweight local database', icon: '💾', color: 'bg-amber-50 text-amber-500' },
     ]
 
     const stats = [
@@ -63,7 +62,7 @@ const About = () => {
                         Our Story
                     </motion.div>
                     <motion.h1 variants={fadeUp} className="text-4xl md:text-6xl font-extrabold text-textBlack mb-6 tracking-tight">
-                        {t.about.title} <span className="gradient-text">HomeCloud</span>
+                        {t.about.title} <span className="gradient-text">Home Cloud</span>
                     </motion.h1>
                     <motion.p variants={fadeUp} className="text-xl text-gray font-light max-w-2xl mx-auto leading-relaxed">
                         {t.about.subtitle}
@@ -175,11 +174,11 @@ const About = () => {
                     >
                         <motion.h2 variants={fadeUp} className="text-3xl font-bold text-textBlack mb-4">Built With Modern Technology</motion.h2>
                         <motion.p variants={fadeUp} className="text-gray max-w-2xl mx-auto">
-                            HomeCloud is built using the latest technologies for optimal performance, security, and reliability.
+                            Home Cloud is built using the latest technologies for optimal performance, security, and reliability.
                         </motion.p>
                     </motion.div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
                         {techStack.map((tech, index) => (
                             <motion.div
                                 key={index}

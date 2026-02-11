@@ -1314,12 +1314,12 @@ class _LegendItem extends StatelessWidget {
   }
 }
 
-String _formatBytes(int bytes) {
-  if (bytes <= 0) return "0 B";
-  const suffixes = ["B", "KB", "MB", "GB", "TB"];
-  var i = (math.log(bytes) / math.log(1024)).floor();
-  return '${(bytes / math.pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
-}
+// String _formatBytes(int bytes) {
+//   if (bytes <= 0) return "0 B";
+//   const suffixes = ["B", "KB", "MB", "GB", "TB"];
+//   var i = (math.log(bytes) / math.log(1024)).floor();
+//   return '${(bytes / math.pow(1024, i)).toStringAsFixed(2)} ${suffixes[i]}';
+// }
 
 class _SmallQuotaItem extends StatelessWidget {
   final String label;

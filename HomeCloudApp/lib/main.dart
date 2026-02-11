@@ -10,7 +10,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:media_kit/media_kit.dart';
 import 'core/theme/app_theme.dart';
+import 'core/theme/app_colors.dart';
 import 'core/router/app_router.dart';
+import 'core/network/connectivity_service.dart';
 import 'features/home/providers/backup_provider.dart';
 import 'features/home/providers/file_provider.dart';
 import 'features/home/models/backup_config.dart';
@@ -59,26 +61,7 @@ void main() async {
     await windowManager.ensureInitialized();
 
     try {
-      await trayManager.setIcon(
-        Platform.isWindows
-            ? 'assets/icon/app_logo.png'
-            : 'assets/icon/app_logo.png',
-      );
-
-      final Menu menu = Menu(
-        items: [
-          MenuItem(
-            key: 'show_window',
-            label: 'Show Window',
-          ),
-          MenuItem.separator(),
-          MenuItem(
-            key: 'exit_app',
-            label: 'Exit',
-          ),
-        ],
-      );
-      await trayManager.setContextMenu(menu);
+      // Tray is now initialized in _HomeCloudAppState
     } catch (e) {
       debugPrint('Tray icon initialization failed: $e');
     }
@@ -117,6 +100,7 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
     trayManager.addListener(this);
     windowManager.addListener(this);
     WidgetsBinding.instance.addObserver(this);
+    _initTray();
 
     // Setup notification cancel callback
     UploadNotificationService.onCancelUpload = (uploadId) {
@@ -204,12 +188,69 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
   }
 
   @override
-  void onTrayMenuItemClick(MenuItem item) {
-    if (item.key == 'show_window') {
-      windowManager.show();
-    } else if (item.key == 'exit_app') {
-      exit(0);
+  void onTrayMenuItemClick(MenuItem item) async {
+    final backupService = ref.read(backupServiceProvider);
+
+    switch (item.key) {
+      case 'pause_backup':
+        backupService.togglePause();
+        // Update menu label (Pause/Resume)
+        // Note: tray_manager doesn't support dynamic label updates easily without resetting the menu.
+        // For now, we'll just toggle the state.
+        _updateTrayMenu();
+        break;
+      case 'sync_all':
+        final settings = ref.read(backupSettingsProvider);
+        for (final folder in settings.folders) {
+          if (folder.isEnabled) {
+            backupService.syncAllFiles(folder);
+          }
+        }
+        break;
+      case 'open_app':
+        windowManager.show();
+        break;
+      case 'exit_app':
+        windowManager.destroy();
+        break;
     }
+  }
+
+  Future<void> _initTray() async {
+    await trayManager.setIcon(
+      Platform.isWindows
+          ? 'assets/icon/app_logo.png'
+          : 'assets/icon/app_logo.png',
+    );
+    await _updateTrayMenu();
+  }
+
+  Future<void> _updateTrayMenu() async {
+    final backupService = ref.read(backupServiceProvider);
+    final isPaused = backupService.isPaused;
+
+    final Menu menu = Menu(
+      items: [
+        MenuItem(
+          key: 'pause_backup',
+          label: isPaused ? 'Resume Backup' : 'Pause Backup',
+        ),
+        MenuItem(
+          key: 'sync_all',
+          label: 'Sync All Files',
+        ),
+        MenuItem.separator(),
+        MenuItem(
+          key: 'open_app',
+          label: 'Open App',
+        ),
+        MenuItem(
+          key: 'exit_app',
+          label: 'Exit',
+        ),
+      ],
+    );
+    await trayManager.setContextMenu(menu);
   }
 
   @override
@@ -218,11 +259,69 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
 
     ref.watch(backupServiceProvider);
 
+    // Monitor server connectivity
+    ref.listen<ConnectivityState>(serverConnectivityProvider, (previous, next) {
+      if (next.isServerDown && !(previous?.isServerDown ?? false)) {
+        _showStyledDialog(
+          context: context,
+          title: 'Connection Lost',
+          child: const Text(
+            'The connection to the HomeCloud server has been lost. You have been logged out for security.',
+            style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
+          ),
+          confirmText: 'OK',
+          onConfirm: () {
+            ref.read(serverConnectivityProvider.notifier).resetServerDown();
+          },
+        );
+      }
+    });
+
     return MaterialApp.router(
       title: 'Home Cloud',
       theme: AppTheme.lightTheme,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
+    );
+  }
+
+  void _showStyledDialog({
+    required BuildContext context,
+    required String title,
+    required Widget child,
+    required VoidCallback onConfirm,
+    String confirmText = 'Confirm',
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(
+          title,
+          style: const TextStyle(
+            fontFamily: 'Plus Jakarta Sans',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: child,
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onConfirm();
+            },
+            child: Text(
+              confirmText,
+              style: const TextStyle(
+                fontFamily: 'Plus Jakarta Sans',
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

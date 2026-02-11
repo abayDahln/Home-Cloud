@@ -34,7 +34,7 @@ const Landing = () => {
             ),
             title: t.features.secureStorage,
             description: t.features.secureStorageDesc,
-            gradient: 'from-blue-500 to-indigo-600',
+            gradient: 'from-primary to-primary-dark1',
         },
         {
             icon: (
@@ -54,7 +54,7 @@ const Landing = () => {
             ),
             title: t.features.autoSync,
             description: t.features.autoSyncDesc,
-            gradient: 'from-cyan-500 to-blue-600',
+            gradient: 'from-primary-light1 to-primary',
         },
         {
             icon: (
@@ -89,10 +89,38 @@ const Landing = () => {
     ]
 
     const platforms = [
-        { name: 'Android', icon: '🤖', color: 'from-green-400 to-green-600' },
-        { name: 'iOS', icon: '🍎', color: 'from-gray-400 to-gray-600' },
-        { name: 'Windows', icon: '🪟', color: 'from-blue-400 to-blue-600' },
-        { name: 'Linux', icon: '🐧', color: 'from-amber-400 to-amber-600' },
+        {
+            name: 'Android',
+            icon: (
+                <svg className="w-12 h-12" viewBox="0 0 24 24" fill="#3DDC84">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9997.9993-.9997c.5511 0 .9993.4486.9993.9997s-.4482.9997-.9993.9997zm-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9997.9993-.9997c.5511 0 .9993.4486.9993.9997s-.4482.9997-.9993.9997zm11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5682.1521l-2.0225 3.503C15.5902 8.2439 13.8533 7.8449 12 7.8449c-1.8533 0-3.5902.399-5.1364 1.1048L4.8411 5.4467a.4161.4161 0 00-.5682-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3432-4.1021-2.6889-7.5743-6.1185-9.4396z" />
+                </svg>
+            )
+        },
+        {
+            name: 'iOS',
+            icon: (
+                <svg className="w-12 h-12" viewBox="0 0 24 24" fill="#000000">
+                    <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
+                </svg>
+            )
+        },
+        {
+            name: 'Windows',
+            icon: (
+                <svg className="w-12 h-12" viewBox="0 0 24 24" fill="#0078D6">
+                    <path d="M3 12V6.75l6-1.32v6.48L3 12zm7-6.79l10-2.21v8.75l-10 .15V5.21zm-7 7.79l6 .09v6.81l-6-1.15V13zm7 .1l10 .15V22l-10-1.91V13.1z" />
+                </svg>
+            )
+        },
+        {
+            name: 'Linux',
+            icon: (
+                <svg className="w-12 h-12" viewBox="0 0 24 24" fill="#333333">
+                    <path d="M12.504 0c-.155 0-.315.008-.48.021-4.226.333-3.105 4.807-3.17 6.298-.076 1.092-.3 1.953-1.05 3.02-.885 1.051-2.127 2.75-2.716 4.521-.278.832-.41 1.684-.287 2.489a.424.424 0 00-.11.135c-.26.268-.45.6-.663.839-.199.199-.485.267-.797.4-.313.136-.658.269-.864.68-.09.189-.136.394-.132.602 0 .199.027.4.055.536.058.399.116.728.04.97-.249.68-.28 1.145-.106 1.484.174.334.535.47.94.601.81.2 1.91.135 2.774.6.926.466 1.866.67 2.616.47.526-.116.97-.464 1.208-.946.587-.003 1.23-.269 2.26-.334.699-.058 1.574.267 2.577.2.025.134.063.198.114.333l.003.003c.391.778 1.113 1.132 1.884 1.071.771-.06 1.592-.536 2.257-1.306.631-.765 1.683-1.084 2.378-1.503.348-.199.629-.469.649-.853.023-.4-.2-.811-.714-1.376v-.097l-.003-.003c-.17-.2-.25-.535-.338-.926-.085-.401-.182-.786-.492-1.046h-.003c-.059-.054-.123-.067-.188-.135a.357.357 0 00-.19-.064c.431-1.278.264-2.55-.173-3.694-.533-1.41-1.465-2.638-2.175-3.483-.796-1.005-1.576-1.957-1.56-3.368.026-2.152.236-6.133-3.544-6.139zm.529 3.405h.013c.213 0 .396.062.584.198.19.135.33.332.438.533.105.259.158.459.166.724 0-.02.006-.04.006-.06v.105a.086.086 0 01-.004-.021l-.004-.024a1.807 1.807 0 01-.15.706.953.953 0 01-.213.335.71.71 0 00-.088-.042c-.104-.045-.198-.064-.284-.133a1.312 1.312 0 00-.22-.066c.05-.06.146-.133.183-.198.053-.128.082-.264.088-.402v-.02a1.21 1.21 0 00-.061-.4c-.045-.134-.101-.2-.183-.333-.084-.066-.167-.132-.267-.132h-.016c-.093 0-.176.03-.262.132a.8.8 0 00-.205.334 1.18 1.18 0 00-.09.4v.019c.002.089.008.179.02.267-.193-.067-.438-.135-.607-.202a1.635 1.635 0 01-.018-.2v-.02a1.772 1.772 0 01.15-.768c.082-.22.232-.406.43-.533a.985.985 0 01.594-.2zm-2.962.059h.036c.142 0 .27.048.399.135.146.129.264.288.344.465.09.199.14.4.153.667v.004c.007.134.006.2-.002.266v.08c-.03.007-.056.018-.083.024-.152.055-.274.135-.393.2.012-.09.013-.18.003-.267v-.015c-.012-.133-.04-.2-.082-.333a.613.613 0 00-.166-.267.248.248 0 00-.183-.064h-.021c-.071.006-.13.04-.186.132a.552.552 0 00-.12.27.944.944 0 00-.023.33v.015c.012.135.037.2.08.334.046.134.098.2.166.268.01.009.02.018.034.024-.07.057-.117.07-.176.136a.304.304 0 01-.131.068 2.62 2.62 0 01-.275-.402 1.772 1.772 0 01-.155-.667 1.759 1.759 0 01.08-.668 1.43 1.43 0 01.283-.535c.128-.133.26-.2.418-.2zm1.37 1.706c.332 0 .733.065 1.216.399.293.2.523.269 1.052.468h.003c.255.136.405.266.478.399v-.131a.571.571 0 01.016.47c-.123.31-.516.643-1.063.842v.002c-.268.135-.501.333-.775.465-.276.135-.588.292-1.012.267a1.139 1.139 0 01-.448-.067 3.566 3.566 0 01-.322-.198c-.195-.135-.363-.332-.612-.465v-.005h-.005c-.4-.246-.616-.512-.686-.71-.07-.268-.005-.47.193-.6.224-.135.38-.271.483-.336.104-.074.143-.102.176-.131h.002v-.003c.169-.202.436-.47.839-.601.139-.036.294-.065.466-.065zm2.8 2.142c.358 1.417 1.196 3.475 1.735 4.473.286.534.855 1.659 1.102 3.024.156-.005.33.018.513.064.646-1.671-.546-3.467-1.089-3.966-.22-.2-.232-.335-.123-.335.59.534 1.365 1.572 1.646 2.757.13.535.16 1.104.021 1.67.067.028.135.06.205.067 1.032.534 1.413.938 1.23 1.537v-.002c-.06-.135-.12-.2-.2-.333-.08-.066-.16-.135-.257-.2h-.005c-.141-.066-.293-.135-.381-.271-.12.135-.241.2-.381.266h-.004c-.12.066-.261.2-.443.2.04.135.06.265.039.4v.002c-.04.135-.1.2-.18.335-.16.269-.4.535-.76.733-.38.199-.79.399-1.22.465-.43.066-.9.066-1.4-.066-.057-.019-.117-.036-.18-.06-.14.358-.381.668-.758.899v.002c.298-.135.582-.335.783-.667.067-.135.102-.2.121-.334v-.003c.02-.135.02-.334-.06-.468-.04-.066-.14-.2-.26-.267-.12-.065-.28-.135-.46-.197-.36-.135-.5-.261-.58-.4-.079-.133-.136-.332-.221-.535-.046-.135-.1-.266-.18-.399-.46-.334-.6-.535-.6-.869 0-.135.02-.27.04-.4a1.5 1.5 0 01.14-.4c-.04-.066-.08-.132-.12-.198-.12-.2-.28-.533-.32-.867-.04-.2-.06-.4-.02-.6.02-.2.08-.4.16-.533.16-.27.36-.469.6-.602.24-.135.48-.2.72-.202.12 0 .24.016.36.05v-.001c.12.033.22.066.32.133.66.269 1.16.875 1.4 1.671.12.466.14 1.002-.08 1.336v.002c-.04.066-.08.135-.14.198l.01-.002c.02.002.04.003.06.008.14.033.3.066.46.135l.04.02c-.08-.4-.2-.867-.36-1.2-.26-.604-.681-1.138-1.14-1.337a3.03 3.03 0 00-.42-.135c-.1-.027-.2-.04-.3-.04-.2-.002-.4.033-.58.135-.18.135-.34.27-.42.468-.08.2-.1.402-.08.601.02.2.08.334.16.534.08.201.22.401.4.533.18.135.4.2.62.268.2.066.4.133.6.265v.002c.2.135.32.334.4.602.06.134.08.268.08.4.06.066.16.135.28.198.12.066.26.066.4.066.12 0 .26 0 .4-.066.12-.065.24-.135.36-.268l-.04.268c0 .133-.04.266-.14.398-.08.135-.26.268-.52.4-.26.135-.54.2-.78.266-.24.066-.46.135-.66.268-.2.135-.36.335-.48.668l.04.066v.002a.77.77 0 00.58.2c.2 0 .38-.066.56-.133.18-.066.34-.2.5-.334.16-.132.3-.331.44-.532.18-.2.22-.468.22-.667 0-.135-.02-.265-.06-.4.5-.2.86-.535 1.06-.802.22-.266.36-.533.44-.733.08-.2.08-.334.04-.401 0-.066-.08-.135-.18-.2-.1-.066-.22-.133-.34-.2-.16-.133-.3-.333-.4-.6a4.33 4.33 0 01-.16-.734c-.06-.333-.1-.667-.14-.999-.04-.334-.14-.602-.24-.867-.04-.135-.1-.268-.18-.4-.08-.134-.18-.268-.3-.401-.24-.27-.52-.469-.84-.535-.32-.067-.64-.067-.96.067-.32.133-.6.332-.82.599-.22.268-.36.601-.44.936-.08.266-.12.6-.1.867.02.2.08.4.16.533l-.04-.001zM7.5 14c.6 0 1.1.4 1.1 1s-.5 1-1.1 1c-.6 0-1.1-.4-1.1-1s.5-1 1.1-1zm9 0c.6 0 1.1.4 1.1 1s-.5 1-1.1 1c-.6 0-1.1-.4-1.1-1s.5-1 1.1-1z" />
+                </svg>
+            )
+        },
     ]
 
     // animation variants
@@ -211,10 +239,8 @@ const Landing = () => {
                             <div className="w-20 md:w-64 bg-bgWhite border-r border-lightGray flex flex-col flex-shrink-0 transition-all duration-300">
                                 {/* Logo Area */}
                                 <div className="h-16 flex items-center px-4 md:px-6 border-b border-lightGray/50">
-                                    <div className="w-9 h-9 bg-gradient-to-br from-primary to-primary-dark1 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
-                                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                                        </svg>
+                                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-black/5 p-1">
+                                        <img src="/src/assets/icon/app_logo.png" alt="Logo" className="w-full h-full object-contain" />
                                     </div>
                                     <span className="hidden md:block ml-3 font-bold text-textBlack text-lg tracking-tight">Home Cloud</span>
                                 </div>
@@ -243,7 +269,7 @@ const Landing = () => {
                                         className={`p-4 rounded-2xl border transition-all duration-300 cursor-pointer ${activePreview === 'server' ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10' : 'bg-white border-lightGray/60 shadow-sm hover:border-primary/40'}`}
                                     >
                                         <div className={`flex items-center gap-2 mb-3 font-bold text-sm ${activePreview === 'server' ? 'text-primary' : 'text-textBlack'}`}>
-                                            <div className={`p-1.5 rounded-lg ${activePreview === 'server' ? 'bg-primary text-white' : 'bg-blue-50 text-primary'}`}>
+                                            <div className={`p-1.5 rounded-lg ${activePreview === 'server' ? 'bg-primary text-white' : 'bg-primary/10 text-primary'}`}>
                                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
                                             </div>
                                             Storage
@@ -348,7 +374,7 @@ const Landing = () => {
                                                                 }}
                                                                 className="w-32 h-36 md:w-40 md:h-48 rounded-2xl border border-lightGray/40 hover:border-primary/20 bg-white flex flex-col items-center justify-center p-4 shadow-sm transition-all duration-300 cursor-pointer group"
                                                             >
-                                                                <div className="w-16 h-14 bg-blue-100 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
+                                                                <div className="w-16 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-3 group-hover:scale-110 transition-transform duration-300">
                                                                     <svg className="w-10 h-10 text-primary fill-current" viewBox="0 0 24 24">
                                                                         <path d="M19.5 21a3 3 0 003-3v-4.5a3 3 0 00-3-3h-15a3 3 0 00-3 3V18a3 3 0 003 3h15zM1.5 10.146V6a3 3 0 013-3h5.379a2.25 2.25 0 011.59.659l2.122 2.121c.14.141.331.22.53.22H19.5a3 3 0 013 3v1.146A4.483 4.483 0 0019.5 9h-15a4.483 4.483 0 00-3 1.146z" />
                                                                     </svg>
@@ -456,8 +482,8 @@ const Landing = () => {
                                                                     {/* Image Modal Content */}
                                                                     <div className="h-14 border-b border-white/10 flex items-center justify-between px-4 bg-[#1f222a]">
                                                                         <div className="flex items-center gap-2">
-                                                                            <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                                                                                <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                                                            <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+                                                                                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                                                                             </div>
                                                                             <span className="text-white font-medium text-sm">{selectedFile.name}</span>
                                                                         </div>
@@ -480,7 +506,7 @@ const Landing = () => {
                                                                     <div className="p-4 flex items-center justify-between">
                                                                         <div className="flex items-center gap-3">
                                                                             <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
-                                                                                <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+                                                                                <svg className="w-5 h-5 text-primary" fill="currentColor" viewBox="0 0 24 24">
                                                                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
                                                                                 </svg>
                                                                             </div>
@@ -598,6 +624,78 @@ const Landing = () => {
                                             </AnimatePresence>
 
                                         </motion.div>
+                                    ) : activePreview === 'server' ? (
+                                        <motion.div
+                                            key="server"
+                                            initial={{ opacity: 0, scale: 0.95 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 0.95 }}
+                                            transition={{ duration: 0.4 }}
+                                            className="flex-1 flex flex-col p-6 md:p-8 bg-bgWhite overflow-y-auto"
+                                        >
+                                            <div className="flex items-center justify-between mb-8">
+                                                <h2 className="text-xl font-bold text-textBlack">Server Status</h2>
+                                            </div>
+
+                                            {/* DISKS Section */}
+                                            <div className="mb-8">
+                                                <p className="text-xs font-bold text-gray uppercase tracking-wider mb-4">DISKS</p>
+                                                <div className="bg-white rounded-2xl p-6 shadow-sm border border-lightGray/60">
+                                                    <div className="flex items-center gap-3 mb-4">
+                                                        <h3 className="text-lg font-bold text-textBlack">Windows</h3>
+                                                        <span className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">SERVER DISK</span>
+                                                    </div>
+                                                    <p className="text-sm text-gray mb-1">C:</p>
+                                                    <div className="flex items-end gap-2 mb-3">
+                                                        <span className="text-3xl font-bold text-textBlack">85.3%</span>
+                                                        <span className="text-sm text-gray mb-1">used</span>
+                                                    </div>
+
+                                                    {/* Progress Bar */}
+                                                    <div className="w-full bg-lightGray/50 rounded-full h-3 mb-6 overflow-hidden">
+                                                        <motion.div
+                                                            initial={{ width: 0 }}
+                                                            animate={{ width: '85.3%' }}
+                                                            transition={{ duration: 1.5, ease: 'easeOut' }}
+                                                            className="h-full bg-primary rounded-full relative"
+                                                        >
+                                                            <div className="absolute top-0 right-0 bottom-0 w-1 bg-white/20"></div>
+                                                        </motion.div>
+                                                    </div>
+
+                                                    {/* Stats Grid */}
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <div className="bg-bgWhite rounded-xl p-3 border border-lightGray/40">
+                                                            <p className="text-[10px] font-bold text-primary mb-1">Used</p>
+                                                            <p className="text-sm font-bold text-textBlack">405.90 GB</p>
+                                                        </div>
+                                                        <div className="bg-green-50 rounded-xl p-3 border border-green-100">
+                                                            <p className="text-[10px] font-bold text-green-600 mb-1">Free</p>
+                                                            <p className="text-sm font-bold text-textBlack">69.98 GB</p>
+                                                        </div>
+                                                        <div className="bg-bgWhite rounded-xl p-3 border border-lightGray/40">
+                                                            <p className="text-[10px] font-bold text-gray mb-1">Total</p>
+                                                            <p className="text-sm font-bold text-textBlack">475.88 GB</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Cloud Quota Section */}
+                                            <div>
+                                                <p className="text-sm font-bold text-textBlack mb-4">Cloud Quota (Home Screen)</p>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="bg-bgWhite rounded-xl p-4 border border-lightGray/40">
+                                                        <p className="text-[10px] font-bold text-gray mb-1">Used / Quota</p>
+                                                        <p className="text-sm font-bold text-textBlack">0.0 / 25 GB</p>
+                                                    </div>
+                                                    <div className="bg-bgWhite rounded-xl p-4 border border-lightGray/40">
+                                                        <p className="text-[10px] font-bold text-gray mb-1">Free Quota</p>
+                                                        <p className="text-sm font-bold text-textBlack">25 GB</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </motion.div>
                                     ) : (
                                         <motion.div
                                             key="login"
@@ -610,12 +708,8 @@ const Landing = () => {
                                             <div className="w-full max-w-sm flex flex-col items-center">
                                                 {/* Login Logo */}
                                                 <div className="mb-8 flex flex-col items-center">
-                                                    <div className="w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-primary/5">
-                                                        <svg className="w-12 h-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 13.5V11a3 3 0 016 0v2.5M9 13.5h6" />
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3L4 9v12h16V9l-8-6z" />
-                                                        </svg>
+                                                    <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-black/5 p-3">
+                                                        <img src="/src/assets/icon/app_logo.png" alt="HomeCloud Logo" className="w-full h-full object-contain" />
                                                     </div>
                                                     <h2 className="text-3xl font-bold text-textBlack mb-2">Home Cloud</h2>
                                                     <p className="text-gray text-sm">Connect to your personal server</p>
@@ -774,7 +868,7 @@ const Landing = () => {
                                 <motion.span
                                     animate={{ scale: [1, 1.08, 1] }}
                                     transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: index * 0.5 }}
-                                    className="text-5xl mb-3 block"
+                                    className="mb-3 block"
                                 >
                                     {platform.icon}
                                 </motion.span>

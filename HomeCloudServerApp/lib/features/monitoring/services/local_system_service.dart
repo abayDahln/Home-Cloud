@@ -1,97 +1,64 @@
 import 'dart:async';
 import 'dart:io';
-
-class SystemUsage {
-  final double cpuPercent;
-  final double memoryPercent;
-  final int memoryUsed;
-  final int memoryTotal;
-  final double diskPercent;
-  final int diskUsed;
-  final int diskTotal;
-
-  SystemUsage({
-    required this.cpuPercent,
-    required this.memoryPercent,
-    required this.memoryUsed,
-    required this.memoryTotal,
-    required this.diskPercent,
-    required this.diskUsed,
-    required this.diskTotal,
-  });
-
-  factory SystemUsage.empty() {
-    return SystemUsage(
-      cpuPercent: 0,
-      memoryPercent: 0,
-      memoryUsed: 0,
-      memoryTotal: 1,
-      diskPercent: 0,
-      diskUsed: 0,
-      diskTotal: 1,
-    );
-  }
-}
+import '../models/system_info.dart';
 
 class LocalSystemService {
-  Future<SystemUsage> getSystemUsage() async {
+  // Cache static info
+  OsInfo? _cachedOsInfo;
+  SysInfo? _cachedSysInfo;
+  CpuInfo? _cachedCpuInfo;
+
+  Future<SystemInfo> getSystemInfo() async {
     if (Platform.isWindows) {
-      return _getWindowsUsage();
+      return _getWindowsSystemInfo();
     }
-    // Fallback or implement other OS
-    return SystemUsage.empty();
+    return SystemInfo.empty();
   }
 
-  Future<SystemUsage> _getWindowsUsage() async {
-    double cpu = 0;
+  Future<SystemInfo> _getWindowsSystemInfo() async {
+    double cpuUsage = 0;
     int memTotal = 0;
     int memFree = 0;
     int diskTotal = 0;
     int diskFree = 0;
+    String diskLabel = '';
 
     try {
-      // CPU
-      // wmic cpu get loadpercentage
+      // CPU Usage
       final cpuRes =
-          await Process.run('wmic', ['cpu', 'get', 'loadpercentage']);
+          await Process.run('wmic', ['cpu', 'get', 'loadpercentage', '/Value']);
       if (cpuRes.exitCode == 0) {
         final lines = cpuRes.stdout.toString().split('\n');
         for (var line in lines) {
-          final trimmed = line.trim();
-          if (trimmed.isNotEmpty && int.tryParse(trimmed) != null) {
-            cpu = double.parse(trimmed);
+          if (line.trim().startsWith('LoadPercentage=')) {
+            cpuUsage = double.tryParse(line.split('=')[1].trim()) ?? 0;
             break;
           }
         }
       }
 
-      // Safer Memory Fetch
-      // wmic OS get FreePhysicalMemory,TotalVisibleMemorySize /Value
-      final memResSafe = await Process.run('wmic',
+      // Memory
+      final memRes = await Process.run('wmic',
           ['OS', 'get', 'FreePhysicalMemory,TotalVisibleMemorySize', '/Value']);
-      if (memResSafe.exitCode == 0) {
-        final lines = memResSafe.stdout.toString().split('\n');
+      if (memRes.exitCode == 0) {
+        final lines = memRes.stdout.toString().split('\n');
         for (var line in lines) {
           if (line.contains('FreePhysicalMemory')) {
-            memFree = int.tryParse(line.split('=')[1].trim()) ?? 0;
+            memFree = (int.tryParse(line.split('=')[1].trim()) ?? 0) * 1024;
           }
           if (line.contains('TotalVisibleMemorySize')) {
-            memTotal = int.tryParse(line.split('=')[1].trim()) ?? 0;
+            memTotal = (int.tryParse(line.split('=')[1].trim()) ?? 0) * 1024;
           }
         }
       }
-      // Info from wmic is in Kilobytes
-      memFree *= 1024;
-      memTotal *= 1024;
 
-      // Disk (Current Drive, usually C:)
-      // wmic logicaldisk where "DeviceID='C:'" get FreeSpace,Size /Value
+      // Disk (C:)
       final diskRes = await Process.run('wmic', [
         'logicaldisk',
         'where',
         'DeviceID="C:"',
         'get',
-        'FreeSpace,Size',
+        'FreeSpace,Size,VolumeName',
         '/Value'
       ]);
       if (diskRes.exitCode == 0) {
@@ -103,7 +70,15 @@ class LocalSystemService {
           if (line.contains('Size')) {
             diskTotal = int.tryParse(line.split('=')[1].trim()) ?? 0;
           }
+          if (line.contains('VolumeName')) {
+            diskLabel = line.split('=')[1].trim();
+          }
         }
+      }
+
+      // Static Info (fetch once)
+      if (_cachedOsInfo == null) {
+        await _fetchStaticInfo();
       }
     } catch (e) {
       // ignore
@@ -112,14 +87,99 @@ class LocalSystemService {
     final memUsed = memTotal - memFree;
     final diskUsed = diskTotal - diskFree;
 
-    return SystemUsage(
-      cpuPercent: cpu,
-      memoryPercent: memTotal > 0 ? (memUsed / memTotal) * 100 : 0,
-      memoryUsed: memUsed,
-      memoryTotal: memTotal,
-      diskPercent: diskTotal > 0 ? (diskUsed / diskTotal) * 100 : 0,
-      diskUsed: diskUsed,
-      diskTotal: diskTotal,
+    return SystemInfo(
+      os: _cachedOsInfo ?? OsInfo.empty(),
+      sys: _cachedSysInfo ?? SysInfo.empty(),
+      cpu: [_cachedCpuInfo ?? CpuInfo.empty()],
+      cpuProcess: CpuProcess(usage: [cpuUsage]),
+      process: ProcessInfo(count: 0, threads: 0), // Requires more complex wmic
+      memory: MemoryInfo(
+        total: memTotal,
+        used: memUsed,
+        free: memFree,
+        available: memFree,
+      ),
+      disks: [
+        DiskInfo(
+          device: 'C:',
+          mountpoint: 'C:',
+          label: diskLabel,
+          fstype: 'NTFS',
+          total: diskTotal,
+          used: diskUsed,
+          free: diskFree,
+          realTotal: diskTotal,
+          realUsed: diskUsed,
+          realFree: diskFree,
+          isProjectDisk: true,
+        ),
+      ],
+      network: NetworkSpeed.empty(), // Hard to get via wmic one-shot
+    );
+  }
+
+  Future<void> _fetchStaticInfo() async {
+    String osName = 'Windows';
+    String hostname = Platform.localHostname;
+    String cpuModel = 'Unknown CPU';
+    int cores = Platform.numberOfProcessors;
+    double maxClock = 0;
+
+    try {
+      final cpuInfoRes = await Process.run(
+          'wmic', ['cpu', 'get', 'Name,MaxClockSpeed', '/Value']);
+      if (cpuInfoRes.exitCode == 0) {
+        final lines = cpuInfoRes.stdout.toString().split('\n');
+        for (var line in lines) {
+          if (line.contains('Name=')) {
+            cpuModel = line.split('=')[1].trim();
+          }
+          if (line.contains('MaxClockSpeed=')) {
+            maxClock = double.tryParse(line.split('=')[1].trim()) ?? 0;
+          }
+        }
+      }
+
+      final osInfoRes = await Process.run(
+          'wmic', ['os', 'get', 'Caption,OSArchitecture', '/Value']);
+      if (osInfoRes.exitCode == 0) {
+        final lines = osInfoRes.stdout.toString().split('\n');
+        String caption = '';
+        String arch = '';
+        for (var line in lines) {
+          if (line.contains('Caption=')) caption = line.split('=')[1].trim();
+          if (line.contains('OSArchitecture='))
+            arch = line.split('=')[1].trim();
+        }
+        if (caption.isNotEmpty) osName = caption;
+      }
+    } catch (e) {
+      // ignore
+    }
+
+    _cachedOsInfo = OsInfo(
+      goVersion: '',
+      os: osName,
+      arch: 'x64', // Assume x64 for now
+      cpuCount: cores.toString(),
+    );
+
+    _cachedSysInfo = SysInfo(
+      hostname: hostname,
+      os: osName,
+      platform: 'windows',
+      kernelArch: 'x86_64',
+    );
+
+    _cachedCpuInfo = CpuInfo(
+      cpu: 0,
+      vendorId: '',
+      family: '',
+      model: '',
+      stepping: 0,
+      flags: [],
+      modelName: cpuModel,
+      mhz: maxClock,
     );
   }
 }

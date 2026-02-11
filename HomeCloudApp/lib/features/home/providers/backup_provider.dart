@@ -86,6 +86,24 @@ class BackupService {
   static const _historyKey = 'sync_history';
   final Set<String> _processingFiles = {};
 
+  bool _isPaused = false;
+  bool get isPaused => _isPaused;
+
+  void togglePause() {
+    _isPaused = !_isPaused;
+    if (_isPaused) {
+      // Create a dummy token to block new syncs
+      _currentSyncToken = CancelToken();
+      debugPrint('⏸️ [BackupService] Paused');
+    } else {
+      _currentSyncToken = null;
+      debugPrint('▶️ [BackupService] Resumed');
+      // Trigger a rescan/process
+      _processQueue();
+      _processQueue();
+    }
+  }
+
   bool get isSyncing => _ref.read(syncStatusProvider);
 
   BackupService(this._ref) : _backupDio = _createBackupDio(_ref) {
@@ -247,6 +265,11 @@ class BackupService {
   }
 
   Future<void> syncAllFiles(BackupFolder folder, {bool silent = false}) async {
+    if (_isPaused) {
+      if (!silent) debugPrint('⏸️ [BackupService] Sync skipped (Paused)');
+      return;
+    }
+
     if (isSyncing && !silent) {
       debugPrint('ℹ️ [BackupService] Sync already in progress');
       return;
@@ -331,6 +354,12 @@ class BackupService {
       {CancelToken? cancelToken, bool bypassHistory = false}) async {
     // On Android/iOS, ForegroundSyncService handles uploads - don't queue here
     if (Platform.isAndroid || Platform.isIOS) return;
+
+    if (_isPaused) {
+      debugPrint(
+          '⏸️ [BackupService] Skipped event (Paused): ${p.basename(filePath)}');
+      return;
+    }
 
     if (_isExcluded(filePath)) {
       return;

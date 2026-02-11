@@ -35,22 +35,12 @@ const HowToUse = () => {
                             {t.howToUse.serverRequirements}
                         </h4>
                         <ul className="grid md:grid-cols-2 gap-2 text-gray text-sm">
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                                Node.js &gt;= 16 / Golang
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                                2 GB RAM
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                                Windows / Linux
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <span className="w-2 h-2 bg-primary rounded-full"></span>
-                                Network Access
-                            </li>
+                            {t.download.reqServer.map((req, i) => (
+                                <li key={i} className="flex items-center gap-2">
+                                    <span className="w-2 h-2 bg-primary rounded-full"></span>
+                                    {req.replace('• ', '')}
+                                </li>
+                            ))}
                         </ul>
                     </div>
                 </div>
@@ -97,17 +87,14 @@ const HowToUse = () => {
                             <div className="flex-shrink-0 w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-sm group-hover/step:bg-primary group-hover/step:text-white transition-colors duration-300">1</div>
                             <div>
                                 <h4 className="font-bold text-textBlack mb-1">{t.howToUse.ensureServerOn}</h4>
-                                <p className="text-gray text-sm">{t.howToUse.ensureServerOnDesc} <code className="bg-lightGray/50 border border-lightGray px-2 py-0.5 rounded font-mono text-primary-dark1">go run main.go</code></p>
+                                <p className="text-gray text-sm">{t.howToUse.ensureServerOnDesc}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-4 p-4 rounded-2xl bg-white border border-lightGray/50 shadow-sm hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 transition-all duration-300 group/step">
                             <div className="flex-shrink-0 w-10 h-10 bg-primary/10 text-primary rounded-full flex items-center justify-center font-bold text-sm group-hover/step:bg-primary group-hover/step:text-white transition-colors duration-300">2</div>
                             <div>
                                 <h4 className="font-bold text-textBlack mb-1">{t.howToUse.findIp}</h4>
-                                <p className="text-gray text-sm space-y-1">
-                                    {t.howToUse.findIpDescWindows} <code className="bg-lightGray/50 border border-lightGray px-2 py-0.5 rounded font-mono text-primary-dark1">ipconfig</code><br />
-                                    {t.howToUse.findIpDescLinux} <code className="bg-lightGray/50 border border-lightGray px-2 py-0.5 rounded font-mono text-primary-dark1">hostname -I</code>
-                                </p>
+                                <p className="text-gray text-sm">{t.howToUse.findIpDesc}</p>
                             </div>
                         </div>
                         <div className="flex items-start gap-4 p-4 rounded-2xl bg-white border border-lightGray/50 shadow-sm hover:shadow-lg hover:border-primary/20 hover:-translate-y-1 transition-all duration-300 group/step">
@@ -115,8 +102,8 @@ const HowToUse = () => {
                             <div>
                                 <h4 className="font-bold text-textBlack mb-1">{t.howToUse.enterAddress}</h4>
                                 <p className="text-gray text-sm">
-                                    {t.howToUse.enterAddressDesc} <code className="bg-lightGray/50 border border-lightGray px-2 py-0.5 rounded font-mono text-primary-dark1">http://[IP]:[PORT]</code><br />
-                                    {t.howToUse.enterAddressExample} <code className="bg-primary/5 border border-primary/20 text-primary px-2 py-0.5 rounded font-semibold font-mono">http://192.168.1.15:8080</code>
+                                    {t.howToUse.enterAddressDesc} <br />
+                                    {t.howToUse.enterAddressExample}
                                 </p>
                             </div>
                         </div>
@@ -125,6 +112,17 @@ const HowToUse = () => {
                             <div>
                                 <h4 className="font-bold text-textBlack mb-1">{t.howToUse.done}</h4>
                                 <p className="text-gray text-sm">{t.howToUse.doneDesc}</p>
+                            </div>
+                        </div>
+
+                        {/* Optional Configuration */}
+                        <div className="mt-4 pt-4 border-t border-dashed border-lightGray">
+                            <div className="flex items-start gap-4 p-4 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm group/step">
+                                <div className="flex-shrink-0 w-10 h-10 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center font-bold text-sm">opt</div>
+                                <div>
+                                    <h4 className="font-bold text-textBlack mb-1">{t.howToUse.optionalConfig}</h4>
+                                    <p className="text-gray text-sm">{t.howToUse.optionalConfigDesc}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
