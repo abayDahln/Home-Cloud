@@ -37,7 +37,7 @@ jobs:
         
       - name: Create server folder in assets
         run: |
-          mkdir -p build/windows/x64/runner/Release/server
+          if (!(Test-Path -Path "build/windows/x64/runner/Release/server")) { New-Item -ItemType Directory -Force -Path "build/windows/x64/runner/Release/server" }
           cp backend/server.exe build/windows/x64/runner/Release/server/
           cp backend/.env.example build/windows/x64/runner/Release/server/.env
           
@@ -46,7 +46,7 @@ jobs:
         
       - name: Re-bundle server into build
         run: |
-          mkdir -p build/windows/x64/runner/Release/server
+          if (!(Test-Path -Path "build/windows/x64/runner/Release/server")) { New-Item -ItemType Directory -Force -Path "build/windows/x64/runner/Release/server" }
           cp backend/server.exe build/windows/x64/runner/Release/server/
           cp backend/.env.example build/windows/x64/runner/Release/server/.env
           

@@ -52,6 +52,18 @@ jobs:
           name: windows-release
           path: HomeCloudApp/build/windows/x64/runner/Release
 
+      - name: Install Inno Setup
+        run: choco install innosetup
+
+      - name: Compile Installer
+        run: iscc "HomeCloudApp/installer/HomeCloudSetupScript.iss"
+
+      - name: Upload Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: HomeCloudApp/installer/Output/setup.exe
+
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -59,7 +71,7 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libmpv-dev libjsoncpp-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libmpv-dev libjsoncpp-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
@@ -95,3 +107,22 @@ jobs:
         with:
           name: ios-release
           path: HomeCloudApp/build/ios/iphoneos
+
+  release:
+    needs: [build-android, build-windows, build-linux, build-ios]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            android-release/*.apk
+            windows-installer/*.exe
+            linux-release/*.zip
+            ios-release/**
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
