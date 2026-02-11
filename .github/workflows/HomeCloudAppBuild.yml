@@ -56,7 +56,7 @@ jobs:
         run: choco install innosetup
 
       - name: Compile Installer
-        run: iscc "HomeCloudApp/installer/HomeCloudSetupScript.iss"
+        run: iscc "installer/HomeCloudSetupScript.iss"
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
@@ -71,7 +71,7 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libmpv-dev libjsoncpp-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libwebkit2gtk-4.1-dev libmpv-dev libjsoncpp-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libayatana-appindicator3-dev
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
