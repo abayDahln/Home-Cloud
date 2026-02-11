@@ -1,0 +1,28 @@
+# IDEs
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# Build artifacts
+**/build/
+**/linux/flutter/ephemeral/
+**/windows/flutter/ephemeral/
+**/macos/Flutter/ephemeral/
+
+# Dependencies
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/pubspec.lock
+**/vendor/
+**/node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Backend
+**/backend/server.exe
+**/*.env

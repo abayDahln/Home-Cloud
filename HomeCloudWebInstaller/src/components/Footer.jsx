@@ -1,0 +1,55 @@
+import { Link } from 'react-router-dom'
+
+const Footer = () => {
+    return (
+        <footer className="bg-white border-t border-lightGray">
+            <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 py-12">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+                    {/* Brand */}
+                    <div className="md:col-span-2">
+                        <Link to="/" className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary-light2 rounded-xl flex items-center justify-center">
+                                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z" />
+                                </svg>
+                            </div>
+                            <span className="text-xl font-bold text-textBlack">HomeCloud</span>
+                        </Link>
+                        <p className="text-gray max-w-md">
+                            Your personal cloud storage solution. Access your files anywhere, anytime, from any device.
+                        </p>
+                    </div>
+
+                    {/* Links */}
+                    <div>
+                        <h4 className="font-semibold text-textBlack mb-4">Quick Links</h4>
+                        <ul className="space-y-2">
+                            <li><Link to="/" className="text-gray hover:text-primary transition-colors">Home</Link></li>
+                            <li><Link to="/about" className="text-gray hover:text-primary transition-colors">About</Link></li>
+                            <li><Link to="/download" className="text-gray hover:text-primary transition-colors">Download</Link></li>
+                        </ul>
+                    </div>
+
+                    {/* Platforms */}
+                    <div>
+                        <h4 className="font-semibold text-textBlack mb-4">Platforms</h4>
+                        <ul className="space-y-2">
+                            <li><span className="text-gray">Android</span></li>
+                            <li><span className="text-gray">iOS</span></li>
+                            <li><span className="text-gray">Windows</span></li>
+                            <li><span className="text-gray">Linux</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div className="border-t border-lightGray mt-12 pt-8 text-center">
+                    <p className="text-gray text-sm">
+                        © {new Date().getFullYear()} HomeCloud. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </footer>
+    )
+}
+
+export default Footer

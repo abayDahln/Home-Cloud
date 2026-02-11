@@ -1,0 +1,24 @@
+HOW TO USE THE LINUX SCRIPTS
+----------------------------
+
+1. **Install Tools (First Time Only):**
+   - Run `./install_tools.sh`.
+   - This script attempts to detect your Linux distribution (Ubuntu, Arch, Debian, Fedora, etc.) and installs Go.
+   - It also downloads the `cloudflared` binary for your architecture (AMD64 or ARM64).
+
+2. **Build the Application:**
+   - Run `./build_app.sh`.
+   - This compiles the Go backend into a `server` binary in the current directory.
+
+3. **Run the Application:**
+   - Run `./run_app.sh`.
+   - This starts the `server` backend.
+   - It also launches `cloudflared` to expose the backend via a tunnel on port 8080.
+   - The script sets up the tunnel temporarily. For a permanent tunnel, refer to Cloudflare's documentation.
+
+4. **Configuration:**
+   - Ensure you restart your terminal after installing tools.
+   - Make sure you check the output of the build script for errors.
+
+5. **Exiting:**
+   - Press `Ctrl+C` in the terminal to stop both the server and the tunnel.

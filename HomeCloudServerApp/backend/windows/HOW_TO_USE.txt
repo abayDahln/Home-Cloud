@@ -1,0 +1,23 @@
+HOW TO USE THE WINDOWS SCRIPTS
+------------------------------
+
+1. **Install Tools (First Time Only):**
+   - Run `install_tools.bat`.
+   - This script will check for Go and attempt to install it via Winget.
+   - It will also download the `cloudflared.exe` binary.
+
+2. **Build the Application:**
+   - Run `build_app.bat`.
+   - This compiles the Go backend into `server.exe` in the current folder.
+   
+3. **Run the Application:**
+   - Run `run_app.bat`.
+   - This starts the `server.exe` backend.
+   - It also launches `cloudflared.exe` to expose the backend via a tunnel on port 8080.
+
+4. **Configuration:**
+   - Ensure the server runs properly on default settings (port 8080).
+   - If Cloudflare needs authentication, you may need to run `cloudflared.exe tunnel login` manually in a terminal once.
+
+5. **Exiting:**
+   - Close the terminal windows to stop the server and the tunnel.

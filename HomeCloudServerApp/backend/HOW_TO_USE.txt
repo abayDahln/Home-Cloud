@@ -1,0 +1,139 @@
+================================================================================
+                         HOMECLOUD SERVER - HOW TO USE
+================================================================================
+
+[ENGLISH]
+--------------------------------------------------------------------------------
+
+REQUIREMENTS:
+- Windows 10/11, Linux, or MacOS
+- Go 1.20+ (only for development/building)
+
+PLATFORM SPECIFIC INSTRUCTIONS:
+We have provided easy-to-use scripts for Windows, Linux, and macOS in their respective folders:
+- /windows: for Windows 10/11 users
+- /linux: for Ubuntu, Debian, Arch, Fedora, etc.
+- /mac: for macOS (Intel and Apple Silicon)
+
+Check the HOW_TO_USE.txt inside each folder for specific instructions on installing tools, building, and running with Cloudflare support.
+
+QUICK START (LEGACY / MANUAL):
+
+QUICK START:
+1. Double-click "start.bat" to run the server
+2. Open the HomeCloud app on your phone/computer
+3. Enter your computer's IP address (e.g., 192.168.1.100:8080)
+4. Enter the password (default: 123)
+
+CONFIGURATION:
+- Run "settings.bat" to change server settings
+- Or manually edit the ".env" file
+
+BUILDING FOR DISTRIBUTION:
+1. Run "build.bat" to create HomeCloudServer.exe
+2. Copy these files to distribute:
+   - HomeCloudServer.exe
+   - run.bat
+   - .env.example (user should rename to .env)
+
+FINDING YOUR IP ADDRESS:
+1. Open Command Prompt
+2. Type: ipconfig
+3. Look for "IPv4 Address" under your network adapter
+
+FIREWALL:
+- Make sure port 8080 is allowed in Windows Firewall
+- Or change the port in settings.bat
+
+
+================================================================================
+
+[BAHASA INDONESIA]
+--------------------------------------------------------------------------------
+
+PERSYARATAN:
+- Windows 10/11, Linux, atau MacOS
+- Go 1.20+ (hanya untuk development/build)
+
+CARA CEPAT MEMULAI:
+1. Klik dua kali "start.bat" untuk menjalankan server
+2. Buka aplikasi HomeCloud di HP/komputer Anda
+3. Masukkan alamat IP komputer Anda (contoh: 192.168.1.100:8080)
+4. Masukkan password (default: 123)
+
+KONFIGURASI:
+- Jalankan "settings.bat" untuk mengubah pengaturan server
+- Atau edit file ".env" secara manual
+
+BUILD UNTUK DISTRIBUSI:
+1. Jalankan "build.bat" untuk membuat HomeCloudServer.exe
+2. Salin file-file berikut untuk didistribusikan:
+   - HomeCloudServer.exe
+   - run.bat
+   - .env.example (pengguna harus rename menjadi .env)
+
+CARA MENCARI ALAMAT IP:
+1. Buka Command Prompt
+2. Ketik: ipconfig
+3. Cari "IPv4 Address" di bawah adapter jaringan Anda
+
+FIREWALL:
+- Pastikan port 8080 diizinkan di Windows Firewall
+- Atau ubah port di settings.bat
+
+
+================================================================================
+                              .ENV FILE SETTINGS
+================================================================================
+
+The .env file contains your server configuration:
+
+PORT=8080
+  -> Port number for the server (default: 8080)
+  -> Example: 8080, 3000, 9000
+
+AUTH_TOKEN=your_password
+  -> Password to access the server
+  -> IMPORTANT: Change this from the default!
+
+WATCH_DIR=./uploads
+  -> Folder where files are stored (DO NOT CHANGE)
+
+STORAGE_QUOTA_GB=100
+  -> Maximum storage space in GB (minimum: 5, maximum: 1000)
+  -> This is the "free space" shown to users
+
+MAX_UPLOAD_SIZE=1073741824
+  -> Maximum file size for single upload (in bytes)
+  -> 1 KB = 1024 bytes
+  -> 1 MB = 1048576 bytes
+  -> 1 GB = 1073741824 bytes
+  -> Maximum allowed: 5 GB (5368709120 bytes)
+
+--------------------------------------------------------------------------------
+
+File .env berisi konfigurasi server Anda:
+
+PORT=8080
+  -> Nomor port untuk server (default: 8080)
+  -> Contoh: 8080, 3000, 9000
+
+AUTH_TOKEN=password_anda
+  -> Password untuk mengakses server
+  -> PENTING: Ubah dari default!
+
+WATCH_DIR=./uploads
+  -> Folder tempat file disimpan (JANGAN DIUBAH)
+
+STORAGE_QUOTA_GB=100
+  -> Ruang penyimpanan maksimal dalam GB (minimum: 5, maksimum: 1000)
+  -> Ini adalah "ruang kosong" yang ditampilkan ke pengguna
+
+MAX_UPLOAD_SIZE=1073741824
+  -> Ukuran file maksimal untuk upload tunggal (dalam bytes)
+  -> 1 KB = 1024 bytes
+  -> 1 MB = 1048576 bytes
+  -> 1 GB = 1073741824 bytes
+  -> Maksimal yang diizinkan: 5 GB (5368709120 bytes)
+
+================================================================================

@@ -1,0 +1,24 @@
+HOW TO USE THE MAC SCRIPTS
+--------------------------
+
+1. **Install Tools (First Time Only):**
+   - Run `./install_tools.sh`.
+   - This script installs Go and Cloudflared using Homebrew.
+   - If Homebrew is not installed, it will prompt you to install it.
+
+2. **Build the Application:**
+   - Run `./build_app.sh`.
+   - This compiles the Go backend into a native universal binary `server` (or `server-amd64` / `server-arm64`).
+
+3. **Run the Application:**
+   - Run `./run_app.sh`.
+   - This starts the `server` backend.
+   - It also launches `cloudflared` to expose the backend via a tunnel on port 8080.
+   - You may need to authenticate `cloudflared` manually via terminal first (`cloudflared tunnel login`).
+
+4. **Configuration:**
+   - Ensure the server runs properly on default settings (port 8080).
+   - If Cloudflare needs authentication, open a separate terminal and run `cloudflared tunnel login`.
+
+5. **Exiting:**
+   - Press `Ctrl+C` in the terminal to stop both the server and the tunnel.
