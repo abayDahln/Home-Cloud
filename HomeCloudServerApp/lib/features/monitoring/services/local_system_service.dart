@@ -124,6 +124,8 @@ class LocalSystemService {
     String cpuModel = 'Unknown CPU';
     int cores = Platform.numberOfProcessors;
     double maxClock = 0;
+    String arch = '';
+    String caption = '';
 
     try {
       final cpuInfoRes = await Process.run(
@@ -144,8 +146,6 @@ class LocalSystemService {
           'wmic', ['os', 'get', 'Caption,OSArchitecture', '/Value']);
       if (osInfoRes.exitCode == 0) {
         final lines = osInfoRes.stdout.toString().split('\n');
-        String caption = '';
-        String arch = '';
         for (var line in lines) {
           if (line.contains('Caption=')) caption = line.split('=')[1].trim();
           if (line.contains('OSArchitecture='))
@@ -160,7 +160,7 @@ class LocalSystemService {
     _cachedOsInfo = OsInfo(
       goVersion: '',
       os: osName,
-      arch: 'x64', // Assume x64 for now
+      arch: arch.isNotEmpty ? arch : 'x64',
       cpuCount: cores.toString(),
     );
 
@@ -168,7 +168,7 @@ class LocalSystemService {
       hostname: hostname,
       os: osName,
       platform: 'windows',
-      kernelArch: 'x86_64',
+      kernelArch: arch.isNotEmpty ? arch : 'x86_64',
     );
 
     _cachedCpuInfo = CpuInfo(

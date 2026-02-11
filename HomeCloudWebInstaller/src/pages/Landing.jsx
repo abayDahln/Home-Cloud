@@ -240,7 +240,7 @@ const Landing = () => {
                                 {/* Logo Area */}
                                 <div className="h-16 flex items-center px-4 md:px-6 border-b border-lightGray/50">
                                     <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-black/5 p-1">
-                                        <img src="/src/assets/icon/app_logo.png" alt="Logo" className="w-full h-full object-contain" />
+                                        <img src="/app_logo.png" alt="Logo" className="w-full h-full object-contain" />
                                     </div>
                                     <span className="hidden md:block ml-3 font-bold text-textBlack text-lg tracking-tight">Home Cloud</span>
                                 </div>
@@ -390,12 +390,12 @@ const Landing = () => {
                                                             animate={{ scale: 1, opacity: 1 }}
                                                             transition={{ type: 'spring' }}
                                                             whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)' }}
-                                                            onClick={() => setSelectedFile({ name: 'Zebra.png', type: 'image', size: '420.2 KB', url: 'https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=800&q=80' })}
+                                                            onClick={() => setSelectedFile({ name: 'Zebra.png', type: 'image', size: '420.2 KB', url: '/Zebra.png' })}
                                                             className="w-32 h-36 md:w-40 md:h-48 rounded-2xl border border-lightGray/40 hover:border-primary/20 bg-white flex flex-col items-center justify-center p-2 shadow-sm transition-all duration-300 cursor-pointer group relative overflow-hidden"
                                                         >
                                                             <div className="w-full h-full absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors z-0" />
                                                             <img
-                                                                src="https://images.unsplash.com/photo-1501706362039-c06b2d715385?w=300&q=80"
+                                                                src="/Zebra.png"
                                                                 alt="Zebra"
                                                                 className="w-24 h-24 object-cover rounded-xl mb-3 shadow-md group-hover:scale-105 transition-transform duration-300 z-10"
                                                             />
@@ -435,7 +435,7 @@ const Landing = () => {
                                                                     name: 'me at the zoo.mp4',
                                                                     type: 'video',
                                                                     size: '772.8 KB',
-                                                                    url: '/src/assets/preview/me at the zoo.mp4'
+                                                                    url: '/me at the zoo.mp4'
                                                                 });
                                                             }}
                                                             className="w-40 h-48 rounded-2xl border border-lightGray/40 hover:border-primary/20 bg-white flex flex-col items-center justify-center p-4 shadow-sm transition-all duration-300 cursor-pointer group"
@@ -709,7 +709,7 @@ const Landing = () => {
                                                 {/* Login Logo */}
                                                 <div className="mb-8 flex flex-col items-center">
                                                     <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mb-6 shadow-xl shadow-black/5 p-3">
-                                                        <img src="/src/assets/icon/app_logo.png" alt="HomeCloud Logo" className="w-full h-full object-contain" />
+                                                        <img src="/app_logo.png" alt="HomeCloud Logo" className="w-full h-full object-contain" />
                                                     </div>
                                                     <h2 className="text-3xl font-bold text-textBlack mb-2">Home Cloud</h2>
                                                     <p className="text-gray text-sm">Connect to your personal server</p>
@@ -918,7 +918,7 @@ const Landing = () => {
                     </div>
                 </motion.div>
             </section>
-        </div>
+        </div >
     )
 }
 

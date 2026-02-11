@@ -9,7 +9,7 @@ const Footer = () => {
                     <div className="md:col-span-2">
                         <Link to="/" className="flex items-center gap-3 mb-4">
                             <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center p-1.5 shadow-sm border border-black/5">
-                                <img src="/src/assets/icon/app_logo.png" alt="HomeCloud Logo" className="w-full h-full object-contain" />
+                                <img src="/app_logo.png" alt="HomeCloud Logo" className="w-full h-full object-contain" />
                             </div>
                             <span className="text-xl font-bold text-textBlack">HomeCloud</span>
                         </Link>
