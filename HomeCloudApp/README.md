@@ -62,12 +62,12 @@
 ## 🚀 Installation & Setup
 
 ### 1. Backend Setup (The Server)
-The backend runs on your host machine (Server/PC) to manage files and system stats.
+The backend runs on your host machine (Server/PC) to manage files and system stats. It is located within the `HomeCloudServerApp` folder.
 
 1.  **Prerequisites**: Install [Go](https://go.dev/dl/) (v1.20+).
 2.  Navigate to the backend directory:
     ```bash
-    cd backend
+    cd ../HomeCloudServerApp/backend
     ```
 3.  Install dependencies:
     ```bash
