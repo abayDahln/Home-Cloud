@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:path/path.dart' as p;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,6 +101,7 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
     trayManager.addListener(this);
     windowManager.addListener(this);
     WidgetsBinding.instance.addObserver(this);
+    windowManager.setPreventClose(true);
     _initTray();
 
     // Setup notification cancel callback
@@ -185,6 +187,12 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
   @override
   void onTrayIconMouseDown() {
     windowManager.show();
+    windowManager.focus();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
   }
 
   @override
@@ -217,11 +225,15 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
   }
 
   Future<void> _initTray() async {
-    await trayManager.setIcon(
-      Platform.isWindows
-          ? 'assets/icon/app_logo.png'
-          : 'assets/icon/app_logo.png',
-    );
+    if (!kIsWeb &&
+        (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
+      final exeDir = p.dirname(Platform.resolvedExecutable);
+      final iconName = Platform.isWindows ? 'favicon.ico' : 'app_logo.png';
+      final iconPath =
+          p.join(exeDir, 'data', 'flutter_assets', 'assets', 'icon', iconName);
+      await trayManager.setIcon(iconPath);
+      await trayManager.setToolTip('Home Cloud');
+    }
     await _updateTrayMenu();
   }
 
@@ -246,7 +258,7 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
         ),
         MenuItem(
           key: 'exit_app',
-          label: 'Exit',
+          label: 'Exit Tray',
         ),
       ],
     );

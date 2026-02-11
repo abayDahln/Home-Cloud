@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
@@ -58,6 +59,7 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
     super.initState();
     trayManager.addListener(this);
     windowManager.addListener(this);
+    windowManager.setPreventClose(true);
     _initTray();
   }
 
@@ -70,12 +72,19 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
 
   @override
   void onWindowClose() async {
-    await windowManager.destroy();
+    // Minimize to tray instead of destroying
+    await windowManager.hide();
   }
 
   @override
   void onTrayIconMouseDown() {
     windowManager.show();
+    windowManager.focus();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
   }
 
   @override
@@ -103,11 +112,12 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
   }
 
   Future<void> _initTray() async {
-    await trayManager.setIcon(
-      Platform.isWindows
-          ? 'assets/icon/app_logo.png'
-          : 'assets/icon/app_logo.png',
-    );
+    final exeDir = p.dirname(Platform.resolvedExecutable);
+    final iconName = Platform.isWindows ? 'app_logo.ico' : 'app_logo.png';
+    final iconPath =
+        p.join(exeDir, 'data', 'flutter_assets', 'assets', 'icon', iconName);
+    await trayManager.setIcon(iconPath);
+    await trayManager.setToolTip('Home Cloud Server');
 
     final Menu menu = Menu(
       items: [
@@ -130,7 +140,7 @@ class _HomeCloudServerAppState extends ConsumerState<HomeCloudServerApp>
         ),
         MenuItem(
           key: 'exit_app',
-          label: 'Exit',
+          label: 'Exit Tray',
         ),
       ],
     );
