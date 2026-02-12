@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -31,10 +32,18 @@ class ApiClient {
       },
       onError: (DioException e, handler) {
         debugPrint('API Error: ${e.message} at ${e.requestOptions.path}');
+        // Broadcast error for realtime handling (e.g. auto-logout)
+        if (!_errorController.isClosed) {
+          _errorController.add(e);
+        }
         return handler.next(e);
       },
     ));
   }
+
+  // Stream for broadcasting API errors (401, Connection, etc.)
+  final _errorController = StreamController<DioException>.broadcast();
+  Stream<DioException> get errorStream => _errorController.stream;
 
   void setToken(String token) {
     _authToken = token;
@@ -56,5 +65,9 @@ class ApiClient {
   void cancelAllRequests() {
     _cancelToken.cancel('User logged out');
     _cancelToken = CancelToken(); // Reset so next session works
+  }
+
+  void dispose() {
+    _errorController.close();
   }
 }

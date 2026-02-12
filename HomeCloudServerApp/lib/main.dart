@@ -13,6 +13,10 @@ import 'features/dashboard/providers/server_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Optimize RAM: Server app is mostly dashboard, limit cache to 20MB
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 20 * 1024 * 1024;
+  PaintingBinding.instance.imageCache.maximumSize = 50;
+
   if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
     try {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();

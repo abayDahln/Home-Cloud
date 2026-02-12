@@ -22,6 +22,12 @@ import 'features/home/services/upload_notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Optimize RAM: Limit Image Cache to 50MB and 100 images
+  // Defaults are often too high (100MB / 1000 images)
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024;
+  PaintingBinding.instance.imageCache.maximumSize = 100;
+
   if (!kIsWeb && Platform.isWindows) {
     MediaKit.ensureInitialized();
   }

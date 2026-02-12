@@ -7,7 +7,7 @@ class ServerSettings {
 
   const ServerSettings({
     this.port = '8090',
-    this.authToken = '123',
+    this.authToken = 'password',
     this.storageQuotaGB = 50,
     this.maxUploadSize = 1073741824,
     this.watchDir = './uploads',
@@ -52,8 +52,8 @@ class ServerSettings {
 
   factory ServerSettings.fromEnvMap(Map<String, String> map) {
     return ServerSettings(
-      port: map['PORT'] ?? '8080',
-      authToken: map['AUTH_TOKEN'] ?? '123',
+      port: map['PORT'] ?? '8090',
+      authToken: map['AUTH_TOKEN'] ?? 'password',
       storageQuotaGB: int.tryParse(map['STORAGE_QUOTA_GB'] ?? '') ?? 50,
       maxUploadSize: int.tryParse(map['MAX_UPLOAD_SIZE'] ?? '') ?? 1073741824,
       watchDir: map['WATCH_DIR'] ?? './uploads',

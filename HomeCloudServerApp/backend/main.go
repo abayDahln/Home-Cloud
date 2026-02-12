@@ -27,10 +27,10 @@ import (
 
 var (
 	watchDir          = "./uploads"
-	authToken         = "123"
+	authToken         = "password"
 	storageQuotaGB    = 50
 	maxUploadFileSize = int64(1 << 30)
-	serverPort        = "8080"
+	serverPort        = "8090"
 )
 
 const (
@@ -46,6 +46,9 @@ var (
 	cachedDirSize int64
 	labelCache    = make(map[string]string)
 	labelCacheMu  sync.RWMutex
+
+	isDirty bool
+	dirtyMu sync.Mutex
 )
 
 type SystemStats struct {
@@ -829,6 +832,7 @@ func startWatcher() {
 	}
 	defer watcher.Close()
 
+	// Initial calculation
 	initialSize, _ := getDirSize(watchDir)
 	mu.Lock()
 	cachedDirSize = initialSize
@@ -845,33 +849,45 @@ func startWatcher() {
 		log.Fatal(err)
 	}
 
+	// Ticker to update size if dirty
+	ticker := time.NewTicker(5 * time.Second)
+	defer ticker.Stop()
+
+	go func() {
+		for range ticker.C {
+			dirtyMu.Lock()
+			needsUpdate := isDirty
+			isDirty = false
+			dirtyMu.Unlock()
+
+			if needsUpdate {
+				newSize, _ := getDirSize(watchDir)
+				mu.Lock()
+				cachedDirSize = newSize
+				mu.Unlock()
+			}
+		}
+	}()
+
 	for {
 		select {
 		case event, ok := <-watcher.Events:
 			if !ok {
 				return
 			}
-			handleEvent(event)
 
+			// Handle directory creation/deletion for watcher
 			if event.Op&fsnotify.Create == fsnotify.Create {
 				info, err := os.Stat(event.Name)
-				if err == nil {
-					if info.IsDir() {
-						watcher.Add(event.Name)
-					} else {
-						mu.Lock()
-						cachedDirSize += info.Size()
-						mu.Unlock()
-					}
+				if err == nil && info.IsDir() {
+					watcher.Add(event.Name)
 				}
-			} else if event.Op&fsnotify.Remove == fsnotify.Remove || event.Op&fsnotify.Rename == fsnotify.Rename {
-				go func() {
-					newSize, _ := getDirSize(watchDir)
-					mu.Lock()
-					cachedDirSize = newSize
-					mu.Unlock()
-				}()
 			}
+
+			// Mark as dirty regarding size
+			dirtyMu.Lock()
+			isDirty = true
+			dirtyMu.Unlock()
 
 		case err, ok := <-watcher.Errors:
 			if !ok {
@@ -882,27 +898,9 @@ func startWatcher() {
 	}
 }
 
+// Simplified handleEvent - mostly removed to reduce overhead and logs
 func handleEvent(event fsnotify.Event) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	now := time.Now()
-	lastEvent, exists := eventCache[event.Name]
-	if exists && now.Sub(lastEvent) < debounceDuration {
-		return
-	}
-	eventCache[event.Name] = now
-
-	switch {
-	case event.Op&fsnotify.Create == fsnotify.Create:
-		log.Println("New:", event.Name)
-	case event.Op&fsnotify.Write == fsnotify.Write:
-		log.Println("Modified:", event.Name)
-	case event.Op&fsnotify.Remove == fsnotify.Remove:
-		log.Println("Deleted:", event.Name)
-	case event.Op&fsnotify.Rename == fsnotify.Rename:
-		log.Println("Renamed:", event.Name)
-	}
+	// No-op for now to save resources
 }
 
 func getDirSize(path string) (int64, error) {
