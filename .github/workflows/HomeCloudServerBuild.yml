@@ -49,15 +49,22 @@ jobs:
           if (!(Test-Path -Path "build/windows/x64/runner/Release/server")) { New-Item -ItemType Directory -Force -Path "build/windows/x64/runner/Release/server" }
           cp backend/server.exe build/windows/x64/runner/Release/server/
           cp backend/.env.example build/windows/x64/runner/Release/server/.env
-          
-      - name: Create Windows Installer (MSIX)
-        run: dart run msix:create
 
-      - name: Upload Windows MSIX
+      - name: Install Inno Setup
+        run: choco install innosetup
+
+      - name: Compile Installer
+        run: iscc "installer/HomeCloudServerSetupScript.iss"
+
+      - name: Rename Installer
+        run: mv installer/Output/HomeCloudServerSetup.exe installer/Output/HomeCloudServerInstaller.exe
+
+      - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          name: home-cloud-server-windows-msix
-          path: HomeCloudServerApp/build/windows/x64/runner/Release/*.msix
+          name: home-cloud-server-windows-installer
+          path: installer/Output/HomeCloudServerInstaller.exe
+          
 
   build-linux:
     runs-on: ubuntu-latest
@@ -100,13 +107,14 @@ jobs:
       - name: Package Linux
         run: |
           cd build/linux/x64/release/bundle
-          zip -r ../../../../../home-cloud-server-linux.zip .
+          zip -r HomeCloudServer-Linux.zip .
+          mv HomeCloudServer-Linux.zip ../../../../../../HomeCloudServer-Linux.zip
           
       - name: Upload Linux Zip
         uses: actions/upload-artifact@v4
         with:
           name: home-cloud-server-linux-zip
-          path: HomeCloudServerApp/home-cloud-server-linux.zip
+          path: HomeCloudServer-Linux.zip
 
   build-macos:
     runs-on: macos-latest
@@ -150,14 +158,14 @@ jobs:
             --window-size 800 400 \
             --icon-size 100 \
             --app-drop-link 600 185 \
-            "HomeCloudServer.dmg" \
+            "HomeCloudServer-macOS.dmg" \
             "build/macos/Build/Products/Release/home_cloud_server.app"
             
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
         with:
           name: home-cloud-server-macos-dmg
-          path: HomeCloudServerApp/HomeCloudServer.dmg
+          path: HomeCloudServer-macOS.dmg
 
   release:
     needs: [build-windows, build-linux, build-macos]
@@ -171,7 +179,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            home-cloud-server-windows-msix/*.msix
+            home-cloud-server-windows-installer/*.exe
             home-cloud-server-linux-zip/*.zip
             home-cloud-server-macos-dmg/*.dmg
         env:

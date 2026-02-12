@@ -28,11 +28,13 @@ jobs:
         run: flutter pub get
       - name: Build APK
         run: flutter build apk --release
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/HomeCloudApp-Android.apk
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-release
-          path: HomeCloudApp/build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/HomeCloudApp-Android.apk
 
   build-windows:
     runs-on: windows-latest
@@ -50,16 +52,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-release
-          path: HomeCloudApp/build/windows/x64/runner/Release
+          path: build/windows/x64/runner/Release
 
-      - name: Create Windows Installer (MSIX)
-        run: dart run msix:create
-
-      - name: Upload Windows MSIX
-        uses: actions/upload-artifact@v4
-        with:
-          name: home-cloud-app-windows-msix
-          path: HomeCloudApp/build/windows/x64/runner/Release/*.msix
 
       - name: Install Inno Setup
         run: choco install innosetup
@@ -67,11 +61,14 @@ jobs:
       - name: Compile Installer
         run: iscc "installer/HomeCloudSetupScript.iss"
 
+      - name: Rename Installer
+        run: mv installer/Output/setup.exe installer/Output/HomeCloudAppSetup.exe
+
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: HomeCloudApp/installer/Output/setup.exe
+          path: HomeCloudApp/installer/Output/HomeCloudAppSetup.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -89,11 +86,17 @@ jobs:
         run: flutter pub get
       - name: Build Linux
         run: flutter build linux
+      - name: Package Linux
+        run: |
+          cd build/linux/x64/release/bundle
+          zip -r HomeCloudApp-Linux.zip .
+          mv HomeCloudApp-Linux.zip ../../../../../../HomeCloudApp-Linux.zip
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: linux-release
-          path: HomeCloudApp/build/linux/x64/release/bundle
+          path: HomeCloudApp-Linux.zip
 
   build-ios:
     runs-on: macos-latest
@@ -115,13 +118,14 @@ jobs:
         run: |
           mkdir -p Payload
           mv build/ios/iphoneos/Runner.app Payload/
-          zip -r HomeCloudApp.ipa Payload
+          zip -r HomeCloudApp-iOS.ipa Payload
+          mv HomeCloudApp-iOS.ipa ../HomeCloudApp-iOS.ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ios-release
-          path: HomeCloudApp/HomeCloudApp.ipa
+          path: HomeCloudApp-iOS.ipa
 
   release:
     needs: [build-android, build-windows, build-linux, build-ios]
@@ -136,7 +140,6 @@ jobs:
         with:
           files: |
             android-release/*.apk
-            home-cloud-app-windows-msix/*.msix
             windows-installer/*.exe
             linux-release/*.zip
             ios-release/*.ipa
