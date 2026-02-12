@@ -137,4 +137,5 @@ msix_config:
   identity_name: com.homecloud.app
   msix_version: 1.0.0.0
   logo_path: assets/icon/app_logo.png
+  install_certificate: false
   capabilities: "internetClient, privateNetworkClientServer"
