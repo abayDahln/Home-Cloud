@@ -28,13 +28,14 @@ jobs:
         run: flutter pub get
       - name: Build APK
         run: flutter build apk --release
-      - name: Rename APK
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/HomeCloudApp-Android.apk
+      - name: Rename and Move APK
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk ../HomeCloudApp-Android.apk
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: android-release
-          path: build/app/outputs/flutter-apk/HomeCloudApp-Android.apk
+          path: HomeCloudApp-Android.apk
 
   build-windows:
     runs-on: windows-latest
@@ -61,14 +62,14 @@ jobs:
       - name: Compile Installer
         run: iscc "installer/HomeCloudSetupScript.iss"
 
-      - name: Rename Installer
-        run: mv installer/Output/setup.exe installer/Output/HomeCloudAppSetup.exe
+      - name: Rename and Move Installer
+        run: Move-Item -Path installer/Output/setup.exe -Destination ../HomeCloudAppSetup.exe
 
       - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: HomeCloudApp/installer/Output/HomeCloudAppSetup.exe
+          path: HomeCloudAppSetup.exe
 
   build-linux:
     runs-on: ubuntu-latest
@@ -90,7 +91,7 @@ jobs:
         run: |
           cd build/linux/x64/release/bundle
           zip -r HomeCloudApp-Linux.zip .
-          mv HomeCloudApp-Linux.zip ../../../../../../HomeCloudApp-Linux.zip
+          mv HomeCloudApp-Linux.zip $GITHUB_WORKSPACE/HomeCloudApp-Linux.zip
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -139,9 +140,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            android-release/*.apk
-            windows-installer/*.exe
-            linux-release/*.zip
-            ios-release/*.ipa
+            android-release/HomeCloudApp-Android.apk
+            windows-installer/HomeCloudAppSetup.exe
+            linux-release/HomeCloudApp-Linux.zip
+            ios-release/HomeCloudApp-iOS.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

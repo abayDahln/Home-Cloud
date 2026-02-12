@@ -31,6 +31,9 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
+          cache-key: 'flutter-:os:-:channel:-:project:-:hash:'
+          cache-path: '${{ github.workspace }}/HomeCloudServerApp/.pub-cache'
           
       - name: Get dependencies
         run: flutter pub get
@@ -56,14 +59,14 @@ jobs:
       - name: Compile Installer
         run: iscc "installer/HomeCloudServerSetupScript.iss"
 
-      - name: Rename Installer
-        run: mv installer/Output/HomeCloudServerSetup.exe installer/Output/HomeCloudServerInstaller.exe
+      - name: Rename and Move Installer
+        run: Move-Item -Path installer/Output/HomeCloudServerSetup.exe -Destination ../HomeCloudServerInstaller.exe
 
       - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
           name: home-cloud-server-windows-installer
-          path: installer/Output/HomeCloudServerInstaller.exe
+          path: HomeCloudServerInstaller.exe
           
 
   build-linux:
@@ -108,7 +111,7 @@ jobs:
         run: |
           cd build/linux/x64/release/bundle
           zip -r HomeCloudServer-Linux.zip .
-          mv HomeCloudServer-Linux.zip ../../../../../../HomeCloudServer-Linux.zip
+          mv HomeCloudServer-Linux.zip $GITHUB_WORKSPACE/HomeCloudServer-Linux.zip
           
       - name: Upload Linux Zip
         uses: actions/upload-artifact@v4
@@ -160,6 +163,7 @@ jobs:
             --app-drop-link 600 185 \
             "HomeCloudServer-macOS.dmg" \
             "build/macos/Build/Products/Release/home_cloud_server.app"
+          mv HomeCloudServer-macOS.dmg ../HomeCloudServer-macOS.dmg
             
       - name: Upload macOS DMG
         uses: actions/upload-artifact@v4
@@ -179,8 +183,8 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            home-cloud-server-windows-installer/*.exe
-            home-cloud-server-linux-zip/*.zip
-            home-cloud-server-macos-dmg/*.dmg
+            home-cloud-server-windows-installer/HomeCloudServerInstaller.exe
+            home-cloud-server-linux-zip/HomeCloudServer-Linux.zip
+            home-cloud-server-macos-dmg/HomeCloudServer-macOS.dmg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
