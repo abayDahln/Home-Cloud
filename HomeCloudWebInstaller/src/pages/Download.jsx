@@ -100,8 +100,8 @@ const Download = () => {
                     <path d="M10 13.1l10 .15V22l-10-1.91V13.1" fill="#FFB900" />
                 </svg>
             ),
-            version: 'v1.0.0', size: '~45 MB', fileName: 'HomeCloudAppSetup.exe',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudAppSetup.exe', available: true, popular: false,
+            version: 'v1.0.0', size: '~45 MB', fileName: 'HomeCloudApp-Windows.exe',
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudApp-Windows.exe', available: true, popular: false,
             features: ['Windows 10/11 (64-bit)', 'Native Performance', 'Auto Updates', 'System Tray Integration']
         },
         {
@@ -131,8 +131,8 @@ const Download = () => {
                     <path d="M10 13.1l10 .15V22l-10-1.91V13.1" fill="#FFB900" />
                 </svg>
             ),
-            fileName: 'HomeCloudServerInstaller.exe',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0s/HomeCloudServerInstaller.exe',
+            fileName: 'HomeCloudServer-Windows.exe',
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0s/HomeCloudServer-Windows.exe',
             description: 'GUI Manager for Windows 10/11. Includes Go Backend.'
         },
         {
