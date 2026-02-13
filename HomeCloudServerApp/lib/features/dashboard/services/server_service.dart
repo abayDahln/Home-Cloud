@@ -219,14 +219,39 @@ class ServerService extends ChangeNotifier {
       String cloudflaredPath = 'cloudflared';
       final localBinaryName =
           Platform.isWindows ? 'cloudflared.exe' : 'cloudflared';
-      final localBinaryPath = p.join(_serverDir, localBinaryName);
 
-      if (await File(localBinaryPath).exists()) {
-        cloudflaredPath = localBinaryPath;
+      // Check multiple possible locations for the binary
+      final platformSubDir =
+          Platform.isLinux ? 'linux' : (Platform.isMacOS ? 'mac' : 'windows');
+      final List<String> pathsToTry = [
+        p.join(_serverDir, platformSubDir, localBinaryName),
+        p.join(_serverDir, localBinaryName),
+      ];
+
+      String? foundPath;
+      for (final path in pathsToTry) {
+        if (await File(path).exists()) {
+          foundPath = path;
+          break;
+        }
+      }
+
+      if (foundPath != null) {
+        cloudflaredPath = foundPath;
         _addLog('[CLOUDFLARED] Using local binary: $cloudflaredPath');
+
+        // Ensure it's executable on Unix-like systems
+        if (!Platform.isWindows) {
+          try {
+            await Process.run('chmod', ['+x', cloudflaredPath]);
+          } catch (e) {
+            _addLog(
+                '[CLOUDFLARED] Warning: Failed to set executable permission: $e');
+          }
+        }
       } else {
         _addLog(
-            '[CLOUDFLARED] Local binary not found at $localBinaryPath, trying system path...');
+            '[CLOUDFLARED] Local binary not found at ${pathsToTry.join(' or ')}, trying system path...');
       }
 
       String port = '8090';
