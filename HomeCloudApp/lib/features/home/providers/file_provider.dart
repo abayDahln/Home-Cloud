@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dio/dio.dart';
 import '../../../core/network/api_client.dart';
@@ -580,7 +581,13 @@ final fileListProvider =
         controller.add(files);
       }
     } catch (e) {
-      // Ignore errors but keep retrying
+      // If folder not found (404), stop retrying to avoid flooding logs
+      if (e is DioException && e.response?.statusCode == 404) {
+        debugPrint('🚫 [FileListProvider] Path not found: $path. Stopping poll.');
+        controller.add([]); // Add empty list
+        return; // Exit without scheduling next timer
+      }
+      // Ignore other errors but keep retrying
     } finally {
       if (!controller.isClosed) {
         timer = Timer(const Duration(seconds: 5), fetch);

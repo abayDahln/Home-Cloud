@@ -17,6 +17,7 @@ import 'widgets/video_player_dialog.dart';
 import 'widgets/audio_player_dialog.dart';
 import 'widgets/image_viewer_dialog.dart';
 import 'widgets/desktop_sidebar.dart';
+import 'widgets/upload_progress_widget.dart';
 import '../providers/backup_picker_provider.dart';
 import '../providers/backup_provider.dart';
 import '../models/backup_config.dart';
@@ -409,6 +410,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
           ),
           const Spacer(),
+          const UploadProgressWidget(isMobile: true),
           const Divider(),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
@@ -1310,13 +1312,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       print('❌ [_uploadFiles] Stack trace: $stack');
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Upload error: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        if (e.toString().contains('zenity')) {
+          _showLinuxDependencyError(context, 'zenity');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Upload error: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     }
   }
@@ -1494,15 +1500,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       print('Stack trace: $stack');
 
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Upload error: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
-          ),
-        );
+        if (e.toString().contains('zenity')) {
+          _showLinuxDependencyError(context, 'zenity');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Upload error: $e'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
       }
     }
+  }
+
+  void _showLinuxDependencyError(BuildContext context, String dependency) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.orangeAccent),
+            const SizedBox(width: 12),
+            const Text('Linux Error',
+                style: TextStyle(color: Colors.white, fontFamily: 'Plus Jakarta Sans')),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'The file picker requires "$dependency" to be installed on your Linux system/WSL.',
+              style: const TextStyle(
+                  color: Colors.white70, fontSize: 14, fontFamily: 'Plus Jakarta Sans'),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Run this command in your terminal:',
+              style: TextStyle(
+                  color: Colors.white54, fontSize: 12, fontFamily: 'Plus Jakarta Sans'),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                'sudo apt update && sudo apt install -y $dependency',
+                style: const TextStyle(
+                    color: Colors.greenAccent, fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close',
+                style: TextStyle(color: Colors.white54, fontFamily: 'Plus Jakarta Sans')),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showCreateFolderDialog(BuildContext context, WidgetRef ref) {
@@ -1954,8 +2020,8 @@ class _FileItemBase extends ConsumerWidget {
       if (['mp4', 'mov', 'avi', 'mkv', 'webm'].contains(ext)) {
         VideoPlayerController? preInitializedController;
 
-        // Pre-initialize on Mobile (Windows will use media_kit in the dialog)
-        if (!Platform.isWindows) {
+        // Pre-initialize on Mobile (Desktop platforms will use media_kit in the dialog)
+        if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
           preInitializedController = VideoPlayerController.networkUrl(
             Uri.parse(streamUrl),
             httpHeaders: headers,

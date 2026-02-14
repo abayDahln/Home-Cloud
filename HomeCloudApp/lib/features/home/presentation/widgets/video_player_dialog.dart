@@ -100,7 +100,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
         String playUrl = _currentUrl;
         Map<String, String> startHeaders = Map.from(widget.headers);
 
-        if (Platform.isWindows) {
+        if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
           // Fix 1: Windows video player often fails with localhost ipv6, force ipv4
           if (playUrl.contains('localhost')) {
             playUrl = playUrl.replaceFirst('localhost', '127.0.0.1');
@@ -117,14 +117,37 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
             }
           }
 
+          debugPrint('🎬 [Desktop] Creating Player instance');
           _player = Player();
-          _videoKitController = mk.VideoController(_player!);
+          
+          _videoKitController = mk.VideoController(
+            _player!,
+            configuration: const mk.VideoControllerConfiguration(
+              // Hardware acceleration often causes native crashes in Linux/WSL environments
+              enableHardwareAcceleration: false,
+            ),
+          );
 
-          // Use media_kit specifically for Windows
+          // Listen for errors from the player stream
+          _player!.stream.error.listen((error) {
+            debugPrint('❌ [MediaKit] Stream Error: $error');
+            if (mounted) {
+              setState(() {
+                _error = _getReadableError(error.toString());
+                _isLoading = false;
+              });
+            }
+          });
+
+          debugPrint('🎬 [Desktop] Opening Media: $playUrl');
+          
+          // For Linux/Windows, if we already have the token in the URL, 
+          // we can omit the extra headers to avoid potential bridge crashes
           await _player!.open(
-            Media(playUrl, httpHeaders: startHeaders),
+            Media(playUrl), 
             play: true,
           );
+          debugPrint('🎬 [Desktop] Media opened successfully');
         } else {
           // Mobile implementation using video_player
           _videoController = vp.VideoPlayerController.networkUrl(
@@ -138,8 +161,9 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
 
           _videoController!.addListener(_videoListener);
 
+          debugPrint('🎬 [Mobile] Initializing VideoPlayerController');
           await _videoController!.initialize().timeout(
-            const Duration(seconds: 60),
+            const Duration(seconds: 45),
             onTimeout: () {
               throw Exception('Connection timeout - server not reachable');
             },
@@ -147,6 +171,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
 
           // Auto-play after initialization
           await _videoController!.play();
+          debugPrint('🎬 [Mobile] Video started playing');
         }
       }
 
@@ -154,7 +179,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
 
       if (!mounted) return;
 
-      if (!Platform.isWindows && _videoController != null) {
+      if (!(Platform.isWindows || Platform.isLinux || Platform.isMacOS) && _videoController != null) {
         _chewieController = ChewieController(
           videoPlayerController: _videoController!,
           autoPlay: true,
@@ -306,6 +331,12 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     }
     if (error.contains('SocketException') || error.contains('network')) {
       return 'Network error. Please check your connection.';
+    }
+    if (error.contains('codec') || error.contains('decode') || error.contains('format')) {
+      return 'Codec Error: The system is missing required multimedia libraries to play this video format.';
+    }
+    if (error.contains('mpv') || error.contains('library not found')) {
+      return 'Media Library Error: libmpv could not be found or initialized.';
     }
     return 'Failed to load video: $error';
   }
@@ -507,6 +538,73 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
                 ),
                 textAlign: TextAlign.center,
               ),
+              if (_error!.contains('Codec') || _error!.contains('Media Library') || _error!.contains('codec')) ...[
+                const SizedBox(height: 24),
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.orangeAccent.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.terminal_rounded, color: Colors.orangeAccent, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            'Linux Error',
+                            style: TextStyle(
+                              fontFamily: 'Plus Jakarta Sans',
+                              color: Colors.orangeAccent,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Video playback on Linux environments often requires additional multimedia libraries. Please try running this command in your terminal:',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'sudo apt update && sudo apt install -y libmpv-dev mpv',
+                          style: TextStyle(
+                            fontFamily: 'monospace',
+                            color: Colors.greenAccent,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'This error is common in Linux or WSL environments when the system media backend is missing. If the command above doesn\'t fix it, it might be due to GUI/GPU limitations. Windows users are recommended to use the native Windows application.',
+                        style: TextStyle(
+                          fontFamily: 'Plus Jakarta Sans',
+                          color: Colors.white54,
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -547,7 +645,7 @@ class _VideoPlayerDialogState extends State<VideoPlayerDialog> {
     }
 
     Widget content;
-    if (Platform.isWindows && _videoKitController != null) {
+    if ((Platform.isWindows || Platform.isLinux || Platform.isMacOS) && _videoKitController != null) {
       content = ClipRRect(
         borderRadius: const BorderRadius.vertical(bottom: Radius.circular(20)),
         child: AspectRatio(

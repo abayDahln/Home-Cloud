@@ -19,6 +19,7 @@ import 'features/home/providers/file_provider.dart';
 import 'features/home/models/backup_config.dart';
 import 'features/home/services/foreground_sync_service.dart';
 import 'features/home/services/upload_notification_service.dart';
+import 'features/home/presentation/widgets/connection_lost_dialog.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,7 +29,7 @@ void main() async {
   PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024;
   PaintingBinding.instance.imageCache.maximumSize = 100;
 
-  if (!kIsWeb && Platform.isWindows) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
     MediaKit.ensureInitialized();
   }
 
@@ -52,7 +53,7 @@ void main() async {
     }
   }
 
-  if (!kIsWeb && Platform.isWindows) {
+  if (!kIsWeb && (Platform.isWindows || Platform.isMacOS)) {
     try {
       PackageInfo packageInfo = await PackageInfo.fromPlatform();
       launchAtStartup.setup(
@@ -235,10 +236,24 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
         (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       final exeDir = p.dirname(Platform.resolvedExecutable);
       final iconName = Platform.isWindows ? 'favicon.ico' : 'app_logo.png';
-      final iconPath =
-          p.join(exeDir, 'data', 'flutter_assets', 'assets', 'icon', iconName);
-      await trayManager.setIcon(iconPath);
-      await trayManager.setToolTip('Home Cloud');
+      
+      // In a released Linux bundle, the path is often ../lib/assets/
+      // or inside the bundle data folder. We check multiple locations.
+      String iconPath = p.join(exeDir, 'data', 'flutter_assets', 'assets', 'icon', iconName);
+      
+      if (!File(iconPath).existsSync()) {
+        // Fallback for different build structures
+        iconPath = p.join(exeDir, 'lib', 'assets', 'assets', 'icon', iconName);
+      }
+
+      try {
+        await trayManager.setIcon(iconPath);
+        if (!Platform.isLinux) {
+          await trayManager.setToolTip('Home Cloud');
+        }
+      } catch (e) {
+        debugPrint('Tray initialization warning: $e');
+      }
     }
     await _updateTrayMenu();
   }
@@ -280,20 +295,14 @@ class _HomeCloudAppState extends ConsumerState<HomeCloudApp>
     // Monitor server connectivity
     ref.listen<ConnectivityState>(serverConnectivityProvider, (previous, next) {
       if (next.isServerDown && !(previous?.isServerDown ?? false)) {
-        _showStyledDialog(
+        showDialog(
           context: context,
-          title: 'Connection Lost',
-          child: const Text(
-            'The connection to the HomeCloud server has been lost. You have been logged out for security.',
-            style: TextStyle(fontFamily: 'Plus Jakarta Sans'),
-          ),
-          confirmText: 'OK',
-          onConfirm: () {
-            ref.read(serverConnectivityProvider.notifier).resetServerDown();
-          },
+          barrierDismissible: false,
+          builder: (dialogContext) => const ConnectionLostDialog(),
         );
       }
     });
+
 
     return MaterialApp.router(
       title: 'Home Cloud',

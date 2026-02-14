@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../auth/providers/auth_provider.dart';
 import '../../providers/file_provider.dart';
+import 'upload_progress_widget.dart';
 
 class DesktopSidebar extends ConsumerWidget {
   const DesktopSidebar({super.key});
@@ -88,6 +89,7 @@ class DesktopSidebar extends ConsumerWidget {
               ],
             ),
           ),
+          const UploadProgressWidget(),
           systemInfoAsync.when(
             data: (systemInfo) {
               final projectDisk = systemInfo.projectDisk;

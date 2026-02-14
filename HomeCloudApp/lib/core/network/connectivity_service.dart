@@ -14,13 +14,23 @@ final serverConnectivityProvider =
 
 class ConnectivityState {
   final bool isServerDown;
+  final bool isRetrying;
   final DateTime? lastCheck;
 
-  ConnectivityState({this.isServerDown = false, this.lastCheck});
+  ConnectivityState({
+    this.isServerDown = false,
+    this.isRetrying = false,
+    this.lastCheck,
+  });
 
-  ConnectivityState copyWith({bool? isServerDown, DateTime? lastCheck}) {
+  ConnectivityState copyWith({
+    bool? isServerDown,
+    bool? isRetrying,
+    DateTime? lastCheck,
+  }) {
     return ConnectivityState(
       isServerDown: isServerDown ?? this.isServerDown,
+      isRetrying: isRetrying ?? this.isRetrying,
       lastCheck: lastCheck ?? this.lastCheck,
     );
   }
@@ -98,7 +108,10 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
 
       if (response.statusCode == 200) {
         _failureCount = 0;
-        state = state.copyWith(isServerDown: false, lastCheck: DateTime.now());
+        if (state.isServerDown) {
+          state = state.copyWith(isServerDown: false);
+        }
+        state = state.copyWith(lastCheck: DateTime.now());
       } else {
         _handleFailure();
       }
@@ -111,19 +124,45 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
   void _handleFailure() {
     _failureCount++;
     if (_failureCount >= 2) {
-      debugPrint(
-          '🚨 [Connectivity] Server unreachable after 2 failures. Logging out.');
+      debugPrint('🚨 [Connectivity] Server unreachable after 2 failures.');
+      // Update state to show "Server Down" UI, but DO NOT logout automatically
       state = state.copyWith(isServerDown: true, lastCheck: DateTime.now());
-      // For connection issues, we notify the UI (via state) which shows the dialog.
-      // The dialog then handles the "reset" or "ok".
-      // But if it's a persistent failure, we might want to force logout?
-      // The user request says "auto logout".
-      // Current behavior: State becomes isServerDown=true -> UI shows Dialog -> Dialog says "You have been logged out" BUT current code doesn't actually log out in _handleFailure unless I add it.
-      // Wait, investigating previous code:
-      // Previous _handleFailure:
-      // if (_failureCount >= 2) { ... state = ... isServerDown: true ... _auth.logout(); }
-      // So yes, it does logout.
-      _auth.logout();
+    }
+  }
+
+  Future<void> retryConnection() async {
+    state = state.copyWith(isRetrying: true);
+    await Future.delayed(const Duration(seconds: 1)); // Minimal delay for UX
+
+    final auth = _ref.read(authProvider);
+    if (!auth.isAuthenticated) {
+      state = state.copyWith(isRetrying: false);
+      return;
+    }
+
+    try {
+      final response = await _api.dio.get('/info',
+          options: Options(
+            connectTimeout: const Duration(seconds: 5),
+            receiveTimeout: const Duration(seconds: 5),
+          ));
+
+      if (response.statusCode == 200) {
+        _failureCount = 0;
+        state = state.copyWith(
+          isServerDown: false,
+          isRetrying: false,
+          lastCheck: DateTime.now(),
+        );
+        debugPrint('✅ [Connectivity] Connection restored!');
+      } else {
+        // Still down
+        state = state.copyWith(isRetrying: false);
+      }
+    } catch (e) {
+      debugPrint('❌ [Connectivity] Retry failed: $e');
+      state = state.copyWith(isRetrying: false);
+      // Keep isServerDown = true
     }
   }
 
@@ -137,3 +176,4 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
     super.dispose();
   }
 }
+

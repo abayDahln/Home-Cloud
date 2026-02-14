@@ -53,6 +53,7 @@ dependencies:
   device_info_plus: ^12.3.0
   flutter_foreground_task: ^9.2.0
   flutter_local_notifications: ^19.1.0
+  media_kit_libs_linux: ^1.2.1
 
 dev_dependencies:
   flutter_test:

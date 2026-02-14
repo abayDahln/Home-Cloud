@@ -27,63 +27,135 @@ class _BackupSettingsScreenState extends ConsumerState<BackupSettingsScreen> {
   }
 
   Future<void> _pickFolder() async {
-    String? result = await FilePicker.platform.getDirectoryPath();
-    if (result != null) {
-      if (!mounted) return;
+    try {
+      String? result = await FilePicker.platform.getDirectoryPath();
+      if (result != null) {
+        if (!mounted) return;
 
-      final folderName =
-          result.split(Platform.pathSeparator).last.toLowerCase();
-      final dangerousFolders = {
-        'backend',
-        'node_modules',
-        '.git',
-        'build',
-        'windows',
-        'program files',
-        'appdata'
-      };
+        final folderName = result.split(Platform.pathSeparator).last.toLowerCase();
+        final dangerousFolders = {
+          'backend',
+          'node_modules',
+          '.git',
+          'build',
+          'windows',
+          'program files',
+          'appdata'
+        };
 
-      bool isDangerous = dangerousFolders.any((d) => folderName.contains(d));
+        bool isDangerous = dangerousFolders.any((d) => folderName.contains(d));
 
-      if (isDangerous) {
-        final confirm = await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.orange),
-                SizedBox(width: 8),
-                Text('Warning'),
+        if (isDangerous) {
+          final confirm = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1A1A1A),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              title: const Row(
+                children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                  SizedBox(width: 8),
+                  Text('Warning', style: TextStyle(color: Colors.white, fontFamily: 'Plus Jakarta Sans')),
+                ],
+              ),
+              content: Text(
+                'The folder "$folderName" may contain system files or backend data that could cause infinite loops or slow performance. Are you sure you want to add it?',
+                style: const TextStyle(color: Colors.white70, fontFamily: 'Plus Jakarta Sans', fontSize: 14),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  child: const Text('Yes, Add it', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                ),
               ],
             ),
-            content: Text(
-              'The folder "$folderName" may contain system files or backend data that could cause infinite loops or slow performance. Are you sure you want to add it?',
-              style: TextStyle(fontFamily: 'Plus Jakarta Sans', fontSize: 14),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text('Yes, Add it'),
-              ),
-            ],
-          ),
+          );
+          if (confirm != true) return;
+        }
+
+        ref.read(backupPickerProvider.notifier).state = BackupPickerState(
+          localPath: result,
+          isPicking: true,
         );
-        if (confirm != true) return;
+
+        if (mounted) {
+          context.push('/');
+        }
       }
-
-      ref.read(backupPickerProvider.notifier).state = BackupPickerState(
-        localPath: result,
-        isPicking: true,
-      );
-
+    } catch (e) {
       if (mounted) {
-        context.push('/');
+        if (e.toString().contains('zenity')) {
+          _showLinuxDependencyError(context, 'zenity');
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Picker error: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
+  }
+
+  void _showLinuxDependencyError(BuildContext context, String dependency) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: const Color(0xFF1A1A1A),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.orangeAccent),
+            const SizedBox(width: 12),
+            const Text('Linux Error',
+                style: TextStyle(color: Colors.white, fontFamily: 'Plus Jakarta Sans')),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'The folder picker requires "$dependency" to be installed on your Linux system/WSL.',
+              style: const TextStyle(
+                  color: Colors.white70, fontSize: 14, fontFamily: 'Plus Jakarta Sans'),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Run this command in your terminal:',
+              style: TextStyle(
+                  color: Colors.white54, fontSize: 12, fontFamily: 'Plus Jakarta Sans'),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                'sudo apt update && sudo apt install -y $dependency',
+                style: const TextStyle(
+                    color: Colors.greenAccent, fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close',
+                style: TextStyle(color: Colors.white54, fontFamily: 'Plus Jakarta Sans')),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
