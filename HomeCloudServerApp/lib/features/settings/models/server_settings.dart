@@ -10,7 +10,7 @@ class ServerSettings {
     this.authToken = 'password',
     this.storageQuotaGB = 50,
     this.maxUploadSize = 1073741824,
-    this.watchDir = './uploads',
+    this.watchDir = '', // Default to empty, will be resolved in service
   });
 
   String get maxUploadSizeDisplay {

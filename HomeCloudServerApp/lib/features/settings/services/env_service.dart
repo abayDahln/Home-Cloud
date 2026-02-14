@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:path/path.dart' as p;
 import '../models/server_settings.dart';
 
 class EnvService {
@@ -6,10 +7,12 @@ class EnvService {
 
   EnvService(this.envPath);
 
-  Future<ServerSettings> loadSettings() async {
+  Future<ServerSettings> loadSettings(String baseDir) async {
     final file = File(envPath);
+    final defaultWatchDir = p.join(baseDir, 'uploads');
+
     if (!await file.exists()) {
-      final settings = const ServerSettings();
+      final settings = ServerSettings(watchDir: defaultWatchDir);
       await saveSettings(settings);
       return settings;
     }
@@ -26,7 +29,15 @@ class EnvService {
         map[key] = value;
       }
     }
-    return ServerSettings.fromEnvMap(map);
+
+    var settings = ServerSettings.fromEnvMap(map);
+    // If it's the old relative default or empty, convert to absolute
+    if (settings.watchDir == './uploads' || settings.watchDir.isEmpty) {
+      settings = settings.copyWith(watchDir: defaultWatchDir);
+      // Save the resolved absolute path back to .env
+      await saveSettings(settings);
+    }
+    return settings;
   }
 
   Future<void> saveSettings(ServerSettings settings) async {

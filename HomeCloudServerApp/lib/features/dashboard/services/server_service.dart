@@ -31,12 +31,43 @@ class ServerService extends ChangeNotifier {
     _serverDir = dir;
   }
 
-  String get _serverBinaryName {
+  String get _platformBinaryName {
     if (Platform.isWindows) return 'server.exe';
+    if (Platform.isMacOS) {
+      // Check for ARM64 first, then AMD64
+      final arm64Path = p.join(_serverDir, 'mac', 'server_darwin_arm64');
+      if (File(arm64Path).existsSync()) return 'server_darwin_arm64';
+      return 'server_darwin_amd64';
+    }
+    if (Platform.isLinux) return 'server_linux_amd64';
     return 'server';
   }
 
-  String get serverBinaryPath => p.join(_serverDir, _serverBinaryName);
+  String get _platformSubdir {
+    if (Platform.isWindows) return 'windows';
+    if (Platform.isMacOS) return 'mac';
+    if (Platform.isLinux) return 'linux';
+    return '';
+  }
+
+  String get serverBinaryPath {
+    // 1. Try platform-specific path (e.g. backend/linux/server_linux_amd64)
+    if (_platformSubdir.isNotEmpty) {
+      final specPath = p.join(_serverDir, _platformSubdir, _platformBinaryName);
+      if (File(specPath).existsSync()) return specPath;
+    }
+
+    // 2. Try standard name in main server dir (e.g. server/server) - matches Production build
+    final standardName = Platform.isWindows ? 'server.exe' : 'server';
+    final standardPath = p.join(_serverDir, standardName);
+    if (File(standardPath).existsSync()) return standardPath;
+
+    // 3. Last fallback (even if it doesn't exist yet, for error reporting)
+    if (_platformSubdir.isNotEmpty) {
+      return p.join(_serverDir, _platformSubdir, _platformBinaryName);
+    }
+    return standardPath;
+  }
 
   Future<bool> checkBinaryExists() async {
     return File(serverBinaryPath).existsSync();
@@ -82,6 +113,16 @@ class ServerService extends ChangeNotifier {
         _status = ServerStatus.error;
         notifyListeners();
         return;
+      }
+
+      // Ensure execution permissions on Linux/macOS
+      if (Platform.isLinux || Platform.isMacOS) {
+        try {
+          await Process.run('chmod', ['+x', binary]);
+          _addLog('[INFO] Ensured execution permissions for binary');
+        } catch (e) {
+          _addLog('[WARN] Failed to set execution permissions: $e');
+        }
       }
 
       final envFile = File(p.join(_serverDir, '.env'));
@@ -208,6 +249,10 @@ class ServerService extends ChangeNotifier {
   String? _cloudflaredUrl;
   bool get isCloudflaredRunning => _cloudflaredProcess != null;
   String? get cloudflaredUrl => _cloudflaredUrl;
+  bool _isDownloadingCloudflared = false;
+  bool get isDownloadingCloudflared => _isDownloadingCloudflared;
+  double _downloadProgress = 0;
+  double get downloadProgress => _downloadProgress;
 
   Future<void> startCloudflared() async {
     if (_cloudflaredProcess != null) return;
@@ -219,25 +264,27 @@ class ServerService extends ChangeNotifier {
       String cloudflaredPath = 'cloudflared';
       final localBinaryName =
           Platform.isWindows ? 'cloudflared.exe' : 'cloudflared';
+      
+      // 1. Try platform-specific path (e.g. backend/linux/cloudflared)
+      final specCloudPath = p.join(_serverDir, _platformSubdir, localBinaryName);
+      // 2. Try standard local path (e.g. backend/cloudflared)
+      final standardCloudPath = p.join(_serverDir, localBinaryName);
 
-      // Check multiple possible locations for the binary
-      final platformSubDir =
-          Platform.isLinux ? 'linux' : (Platform.isMacOS ? 'mac' : 'windows');
-      final List<String> pathsToTry = [
-        p.join(_serverDir, platformSubDir, localBinaryName),
-        p.join(_serverDir, localBinaryName),
-      ];
+      if (File(specCloudPath).existsSync()) {
+        cloudflaredPath = specCloudPath;
+        _addLog('[CLOUDFLARED] Using local binary: $cloudflaredPath');
 
-      String? foundPath;
-      for (final path in pathsToTry) {
-        if (await File(path).exists()) {
-          foundPath = path;
-          break;
+        // Ensure it's executable on Unix-like systems
+        if (!Platform.isWindows) {
+          try {
+            await Process.run('chmod', ['+x', cloudflaredPath]);
+          } catch (e) {
+            _addLog(
+                '[CLOUDFLARED] Warning: Failed to set executable permission: $e');
+          }
         }
-      }
-
-      if (foundPath != null) {
-        cloudflaredPath = foundPath;
+      } else if (File(standardCloudPath).existsSync()) {
+        cloudflaredPath = standardCloudPath;
         _addLog('[CLOUDFLARED] Using local binary: $cloudflaredPath');
 
         // Ensure it's executable on Unix-like systems
@@ -251,7 +298,29 @@ class ServerService extends ChangeNotifier {
         }
       } else {
         _addLog(
-            '[CLOUDFLARED] Local binary not found at ${pathsToTry.join(' or ')}, trying system path...');
+            '[CLOUDFLARED] Local binary not found, attempting to download...');
+        final success = await downloadCloudflared();
+        if (success) {
+          // Retry finding the path
+          if (File(specCloudPath).existsSync()) {
+            cloudflaredPath = specCloudPath;
+          } else if (File(standardCloudPath).existsSync()) {
+            cloudflaredPath = standardCloudPath;
+          }
+
+          if (cloudflaredPath != 'cloudflared') {
+            // Set executable permission again for the newly downloaded file
+            if (!Platform.isWindows) {
+              await Process.run('chmod', ['+x', cloudflaredPath]);
+            }
+          } else {
+            _addLog(
+                '[CLOUDFLARED] Downloaded but still could not find binary. Trying system path...');
+          }
+        } else {
+          _addLog(
+              '[CLOUDFLARED] Local binary not found and download failed, trying system path...');
+        }
       }
 
       String port = '8090';
@@ -305,6 +374,96 @@ class ServerService extends ChangeNotifier {
     } catch (e) {
       _addLog('[CLOUDFLARED] Error starting: $e');
     }
+  }
+
+  Future<bool> downloadCloudflared() async {
+    if (_isDownloadingCloudflared) return false;
+
+    _isDownloadingCloudflared = true;
+    _downloadProgress = 0;
+    notifyListeners();
+
+    try {
+      final arch = _getArchitecture();
+      String url = '';
+
+      if (Platform.isWindows) {
+        url =
+            'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe';
+      } else if (Platform.isLinux) {
+        url =
+            'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-$arch';
+      } else if (Platform.isMacOS) {
+        url =
+            'https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-$arch';
+      }
+
+      if (url.isEmpty) {
+        _addLog('[CLOUDFLARED] Unsupported platform for automatic download');
+        return false;
+      }
+
+      final platformSubDir = Platform.isLinux
+          ? 'linux'
+          : (Platform.isMacOS ? 'mac' : 'windows');
+      final localBinaryName =
+          Platform.isWindows ? 'cloudflared.exe' : 'cloudflared';
+      final savePath = p.join(_serverDir, platformSubDir, localBinaryName);
+
+      // Ensure directory exists
+      final dir = Directory(p.dirname(savePath));
+      if (!dir.existsSync()) {
+        dir.createSync(recursive: true);
+      }
+
+      _addLog('[CLOUDFLARED] Downloading from: $url');
+      _addLog('[CLOUDFLARED] Saving to: $savePath');
+
+      final client = HttpClient();
+      final request = await client.getUrl(Uri.parse(url));
+      final response = await request.close();
+
+      if (response.statusCode != 200) {
+        _addLog(
+            '[CLOUDFLARED] Download failed with status: ${response.statusCode}');
+        return false;
+      }
+
+      final file = File(savePath);
+      final raf = file.openSync(mode: FileMode.write);
+
+      final total = response.contentLength;
+      int downloaded = 0;
+
+      await for (final chunk in response) {
+        raf.writeFromSync(chunk);
+        downloaded += chunk.length;
+        if (total > 0) {
+          _downloadProgress = downloaded / total;
+          notifyListeners();
+        }
+      }
+
+      await raf.close();
+      _addLog('[CLOUDFLARED] Download complete');
+      return true;
+    } catch (e) {
+      _addLog('[CLOUDFLARED] Error downloading: $e');
+      return false;
+    } finally {
+      _isDownloadingCloudflared = false;
+      notifyListeners();
+    }
+  }
+
+  String _getArchitecture() {
+    final version = Platform.version.toLowerCase();
+    if (version.contains('arm64') || version.contains('aarch64')) {
+      return 'arm64';
+    } else if (version.contains('arm')) {
+      return 'arm';
+    }
+    return 'amd64';
   }
 
   Future<void> stopCloudflared() async {

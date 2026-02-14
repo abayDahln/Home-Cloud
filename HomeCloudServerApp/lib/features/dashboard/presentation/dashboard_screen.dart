@@ -113,38 +113,39 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                                  _InfoRow(
-                                    label: 'Status',
-                                    value: _statusText(server.status),
-                                    icon: Icons.circle,
-                                    valueColor: _statusColor(server.status),
-                                  ),
-                                  _InfoRow(
-                                    label: 'Uptime',
-                                    value: server.uptime,
-                                    icon: Icons.timer_rounded,
-                                  ),
-                                  _InfoRow(
-                                    label: 'Platform',
-                                    value: _platformName(),
-                                    icon: Icons.computer_rounded,
-                                  ),
-                                  _InfoRow(
-                                    label: 'Binary',
-                                    value: server.serverBinaryPath
-                                        .split(Platform.pathSeparator)
-                                        .last,
-                                    icon: Icons.terminal_rounded,
-                                  ),
-                                ],
-                              )
+                              _InfoRow(
+                                label: 'Status',
+                                value: _statusText(server.status),
+                                icon: Icons.circle,
+                                valueColor: _statusColor(server.status),
+                              ),
+                              _InfoRow(
+                                label: 'Uptime',
+                                value: server.uptime,
+                                icon: Icons.timer_rounded,
+                              ),
+                              _InfoRow(
+                                label: 'Platform',
+                                value: _platformName(),
+                                icon: Icons.computer_rounded,
+                              ),
+                              _InfoRow(
+                                label: 'Binary',
+                                value: server.serverBinaryPath
+                                    .split(Platform.pathSeparator)
+                                    .last,
+                                icon: Icons.terminal_rounded,
+                              ),
+                            ],
+                          )
                         else
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     _InfoRow(
                                       label: 'Status',
@@ -163,7 +164,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                               const SizedBox(width: 48),
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
                                   children: [
                                     _InfoRow(
                                       label: 'Uptime',
@@ -186,128 +188,8 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                     ),
                     const SizedBox(height: 24),
 
-                    // 3. Config & Network Row
-                    if (isNarrow) ...[
-                      _InfoCard(
-                        title: 'Server Configuration',
-                        icon: Icons.dns_rounded,
-                        children: [
-                          _InfoRow(
-                            label: 'Port',
-                            value: settings.port,
-                            icon: Icons.lan_rounded,
-                          ),
-                          _InfoRow(
-                            label: 'Password',
-                            value: '••••••••',
-                            icon: Icons.lock_rounded,
-                          ),
-                          _InfoRow(
-                            label: 'Storage Quota',
-                            value: '${settings.storageQuotaGB} GB',
-                            icon: Icons.storage_rounded,
-                          ),
-                          _InfoRow(
-                            label: 'Storage Path',
-                            value: settings.watchDir,
-                            icon: Icons.folder_rounded,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      _NetworkInterfacesCard(server: server),
-                    ] else
-                      IntrinsicHeight(
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            Expanded(
-                              child: _InfoCard(
-                                title: 'Server Configuration',
-                                icon: Icons.dns_rounded,
-                                children: [
-                                  if (constraints.maxWidth < 900)
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.stretch,
-                                      children: [
-                                        _InfoRow(
-                                          label: 'Port',
-                                          value: settings.port,
-                                          icon: Icons.lan_rounded,
-                                        ),
-                                        _InfoRow(
-                                          label: 'Password',
-                                          value: '••••••••',
-                                          icon: Icons.lock_rounded,
-                                        ),
-                                        _InfoRow(
-                                          label: 'Storage Quota',
-                                          value: '${settings.storageQuotaGB} GB',
-                                          icon: Icons.storage_rounded,
-                                        ),
-                                        _InfoRow(
-                                          label: 'Storage Path',
-                                          value: settings.watchDir,
-                                          icon: Icons.folder_rounded,
-                                        ),
-                                      ],
-                                    )
-                                  else
-                                    Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              _InfoRow(
-                                                label: 'Port',
-                                                value: settings.port,
-                                                icon: Icons.lan_rounded,
-                                              ),
-                                              _InfoRow(
-                                                label: 'Password',
-                                                value: '••••••••',
-                                                icon: Icons.lock_rounded,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        const SizedBox(width: 48),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.stretch,
-                                            children: [
-                                              _InfoRow(
-                                                label: 'Storage Quota',
-                                                value:
-                                                    '${settings.storageQuotaGB} GB',
-                                                icon: Icons.storage_rounded,
-                                              ),
-                                              _InfoRow(
-                                                label: 'Storage Path',
-                                                value: settings.watchDir,
-                                                icon: Icons.folder_rounded,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 24),
-                            Expanded(
-                              child: _NetworkInterfacesCard(server: server),
-                            ),
-                          ],
-                        ),
-                      ),
+                    // 3. Network Interfaces
+                    _NetworkInterfacesCard(server: server),
                     const SizedBox(height: 32),
                   ],
                 ),
@@ -425,7 +307,8 @@ class _InfoRow extends StatelessWidget {
                 color: AppColors.primary.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(icon, size: 16, color: AppColors.primary.withValues(alpha: 0.7)),
+              child: Icon(icon,
+                  size: 16, color: AppColors.primary.withValues(alpha: 0.7)),
             ),
             const SizedBox(width: 16),
             Text(
@@ -509,7 +392,29 @@ class _CloudflareCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (server.isCloudflaredRunning) ...[
+          if (server.isDownloadingCloudflared) ...[
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: server.downloadProgress > 0
+                    ? server.downloadProgress
+                    : null,
+                backgroundColor: const Color(0xFFF48120).withValues(alpha: 0.1),
+                valueColor: const AlwaysStoppedAnimation(Color(0xFFF48120)),
+                minHeight: 6,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Downloading cloudflared binary...',
+              style: const TextStyle(
+                fontFamily: _fontFamily,
+                fontSize: 12,
+                color: AppColors.gray,
+              ),
+            ),
+          ] else if (server.isCloudflaredRunning) ...[
             if (server.cloudflaredUrl != null)
               Container(
                 padding: const EdgeInsets.all(12),
@@ -680,7 +585,8 @@ class _NetworkInterfacesCardState extends State<_NetworkInterfacesCard> {
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -691,7 +597,8 @@ class _NetworkInterfacesCardState extends State<_NetworkInterfacesCard> {
                             color: AppColors.primary.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: const Icon(Icons.language_rounded, size: 16, color: AppColors.primary),
+                          child: const Icon(Icons.language_rounded,
+                              size: 16, color: AppColors.primary),
                         ),
                         const SizedBox(width: 16),
                         Padding(

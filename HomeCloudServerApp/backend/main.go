@@ -236,47 +236,52 @@ func systemInfoHandler(w http.ResponseWriter, r *http.Request) {
 	var disks []map[string]interface{}
 	var projectDisk map[string]interface{}
 
-	projectDiskID := ""
-	if runtime.GOOS == "windows" {
-		projectDiskID = strings.ToLower(filepath.VolumeName(projectPath))
+	// [Antigravity] Enforcing Storage Quota
+	// We calculate the usage based on our internal tracker (cachedDirSize)
+	// and the Total based on the strict Quota setting.
+	mu.RLock()
+	usedBytes := uint64(cachedDirSize)
+	mu.RUnlock()
+	totalQuota := uint64(storageQuotaGB) * 1024 * 1024 * 1024
+
+	var freeSpace uint64
+	if totalQuota > usedBytes {
+		freeSpace = totalQuota - usedBytes
+	} else {
+		freeSpace = 0
 	}
 
+	// Create a virtual disk entry for the Project Storage
+	// This ensures the frontend sees the Quota as the Total size, not the physical disk size.
+	projectDiskEntry := map[string]interface{}{
+		"device":          "cloud_storage",
+		"mountpoint":      projectPath,
+		"label":           "Cloud Storage",
+		"fstype":          "virtual",
+		"total":           totalQuota,
+		"used":            usedBytes,
+		"free":            freeSpace,
+		"real_total":      totalQuota,
+		"real_used":       usedBytes,
+		"real_free":       freeSpace,
+		"is_project_disk": true,
+		"quota_setting":   storageQuotaGB,
+	}
+	projectDisk = projectDiskEntry
+
+	// Filter and add physical disks
 	for _, d := range stats.Disks {
 		diskCopy := make(map[string]interface{})
 		for k, v := range d {
 			diskCopy[k] = v
 		}
-
-		isProjectDisk := false
-		mountpoint, ok := d["mountpoint"].(string)
-		if ok {
-			if runtime.GOOS == "windows" {
-				if strings.ToLower(filepath.VolumeName(mountpoint)) == projectDiskID {
-					isProjectDisk = true
-				}
-			} else {
-				if strings.HasPrefix(projectPath, mountpoint) {
-					isProjectDisk = true
-				}
-			}
-		}
-
-		if isProjectDisk {
-			diskCopy["is_project_disk"] = true
-			mu.RLock()
-			usedBytes := uint64(cachedDirSize)
-			mu.RUnlock()
-			freeQuota := uint64(storageQuotaGB) * 1024 * 1024 * 1024
-
-			diskCopy["total"] = usedBytes + freeQuota
-			diskCopy["used"] = usedBytes
-			diskCopy["free"] = freeQuota
-			diskCopy["path"] = projectPath
-			diskCopy["quota_setting"] = storageQuotaGB
-			projectDisk = diskCopy
-		}
+		// Ensure no physical disk claims to be the project disk to avoid duplicates
+		diskCopy["is_project_disk"] = false
 		disks = append(disks, diskCopy)
 	}
+
+	// Always append our virtual project disk
+	disks = append(disks, projectDiskEntry)
 
 	info := map[string]interface{}{
 		"os": map[string]string{
@@ -492,11 +497,18 @@ func uploadHandler(w http.ResponseWriter, r *http.Request) {
 	usedBytes := uint64(cachedDirSize)
 	mu.RUnlock()
 
+	totalQuota := uint64(storageQuotaGB) * 1024 * 1024 * 1024
 	const hardLimit = 1000 * 1024 * 1024 * 1024
 
 	if usedBytes+uint64(handler.Size) > hardLimit {
 		log.Printf("Upload rejected: Absolute hard limit reached (1000GB)")
 		http.Error(w, "HomeCloud project limited to maximum 1000 GB total", http.StatusInsufficientStorage)
+		return
+	}
+
+	if usedBytes+uint64(handler.Size) > totalQuota {
+		log.Printf("Upload rejected: Quota exceeded (%d GB)", storageQuotaGB)
+		http.Error(w, fmt.Sprintf("Storage quota exceeded (%d GB)", storageQuotaGB), http.StatusInsufficientStorage)
 		return
 	}
 

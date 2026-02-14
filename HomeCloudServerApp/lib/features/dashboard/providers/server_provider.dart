@@ -33,22 +33,25 @@ final envServiceProvider = Provider<EnvService>((ref) {
 final serverSettingsProvider =
     StateNotifierProvider<ServerSettingsNotifier, ServerSettings>((ref) {
   final envService = ref.watch(envServiceProvider);
-  return ServerSettingsNotifier(envService);
+  final serverDir = ref.watch(serverDirProvider);
+  return ServerSettingsNotifier(envService, serverDir);
 });
 
 class ServerSettingsNotifier extends StateNotifier<ServerSettings> {
   final EnvService _envService;
+  final String _serverDir;
 
-  ServerSettingsNotifier(this._envService) : super(const ServerSettings()) {
+  ServerSettingsNotifier(this._envService, this._serverDir)
+      : super(const ServerSettings()) {
     _load();
   }
 
   Future<void> _load() async {
-    state = await _envService.loadSettings();
+    state = await _envService.loadSettings(_serverDir);
   }
 
   Future<void> reload() async {
-    state = await _envService.loadSettings();
+    state = await _envService.loadSettings(_serverDir);
   }
 
   Future<void> update(ServerSettings settings) async {
