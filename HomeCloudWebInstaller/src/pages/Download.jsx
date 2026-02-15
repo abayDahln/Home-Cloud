@@ -72,7 +72,7 @@ const Download = () => {
                 </svg>
             ),
             version: 'v1.0.0', size: '~25 MB', fileName: 'HomeCloud-Android.apk',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudApp-Android.apk', available: true, popular: true,
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/Release/HomeCloudApp-Android.apk', available: true, popular: true,
             features: ['Android 7.0+', 'Auto Photo Backup', 'Background Sync', 'Offline Access']
         },
         {
@@ -86,7 +86,7 @@ const Download = () => {
                 </svg>
             ),
             version: 'v1.0.0', size: '~30 MB', fileName: 'HomeCloud-iOS.ipa',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudApp-iOS.ipa', available: true, popular: false,
+            downloadUrl: '#', available: false, popular: false,
             features: ['iOS 12.0+', 'Secure Enclave', 'FaceID Support', 'iCloud Sync']
         },
         {
@@ -101,7 +101,7 @@ const Download = () => {
                 </svg>
             ),
             version: 'v1.0.0', size: '~45 MB', fileName: 'HomeCloudApp-Windows.exe',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudApp-Windows.exe', available: true, popular: false,
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/Release/HomeCloudApp-Windows.exe', available: true, popular: false,
             features: ['Windows 10/11 (64-bit)', 'Native Performance', 'Auto Updates', 'System Tray Integration']
         },
         {
@@ -115,7 +115,7 @@ const Download = () => {
                 </svg>
             ),
             version: 'v1.0.0', size: '~40 MB', fileName: 'HomeCloudApp-Linux.zip',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0a/HomeCloudApp-Linux.zip', available: true, popular: false,
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/Release/HomeCloudApp-Linux.zip', available: true, popular: false,
             features: ['AppImage / Deb', 'Debian/Ubuntu/Arch', 'CLI Support', 'Lightweight']
         },
     ]
@@ -132,8 +132,9 @@ const Download = () => {
                 </svg>
             ),
             fileName: 'HomeCloudServer-Windows.exe',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0s/HomeCloudServer-Windows.exe',
-            description: 'GUI Manager for Windows 10/11. Includes Go Backend.'
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/Release/HomeCloudServer-Windows.exe',
+            description: 'GUI Manager for Windows 10/11. Includes Go Backend.',
+            available: true
         },
         {
             name: 'macOS Manager',
@@ -145,8 +146,9 @@ const Download = () => {
             label: t.download.experimental,
             labelColor: 'bg-orange-500',
             fileName: 'HomeCloudServer-macOS.dmg',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0s/HomeCloudServer-macOS.dmg',
-            description: 'Native app for macOS (Intel/Silicon).'
+            downloadUrl: '#',
+            description: 'Native app for macOS (Intel/Silicon).',
+            available: false
         },
         {
             name: 'Linux Manager',
@@ -158,15 +160,17 @@ const Download = () => {
             label: t.download.beta,
             labelColor: 'bg-yellow-500',
             fileName: 'HomeCloudServer-Linux.zip',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/v1.0s/HomeCloudServer-Linux.zip',
-            description: 'Portable app for Linux distributions.'
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/releases/download/Release/HomeCloudServer-Linux.zip',
+            description: 'Portable app for Linux distributions.',
+            available: true
         },
         {
             name: 'Source Code',
             icon: '📦',
-            fileName: 'v1.0s.zip',
-            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/archive/refs/tags/v1.0s.zip',
-            description: 'Backend source code (Requires Golang).'
+            fileName: 'Release.zip',
+            downloadUrl: 'https://github.com/abayDahln/Home-Cloud/archive/refs/tags/Release.zip',
+            description: 'Backend source code (Requires Golang).',
+            available: true
         }
     ]
 
@@ -423,42 +427,48 @@ const Download = () => {
 
                                     {/* Download Button */}
                                     <div className="mt-auto">
-                                        <AnimatePresence mode="wait">
-                                            {serverCompleted[index] ? (
-                                                <motion.div
-                                                    key="done"
-                                                    initial={{ scale: 0.8, opacity: 0 }}
-                                                    animate={{ scale: 1, opacity: 1 }}
-                                                    exit={{ scale: 0.8, opacity: 0 }}
-                                                    className="w-full flex items-center justify-center bg-green-500 text-white font-bold py-3 rounded-xl"
-                                                >
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                                                </motion.div>
-                                            ) : serverDownloading[index] ? (
-                                                <motion.div key="loading" className="w-full relative bg-primary/10 rounded-xl overflow-hidden h-[44px]">
+                                        {server.available !== false ? (
+                                            <AnimatePresence mode="wait">
+                                                {serverCompleted[index] ? (
                                                     <motion.div
-                                                        initial={{ height: '0%' }}
-                                                        animate={{ height: '100%' }}
-                                                        transition={{ duration: 2, ease: 'easeInOut' }}
-                                                        className="absolute bottom-0 left-0 right-0 bg-primary rounded-xl"
-                                                    />
-                                                    <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm z-10">
-                                                        <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1, repeat: Infinity }}>Downloading...</motion.span>
-                                                    </span>
-                                                </motion.div>
-                                            ) : (
-                                                <motion.button
-                                                    key="btn"
-                                                    onClick={() => handleServerDownload(index)}
-                                                    whileHover={{ scale: 1.03 }}
-                                                    whileTap={{ scale: 0.97 }}
-                                                    className="relative w-full overflow-hidden bg-primary text-white font-bold py-3 px-6 rounded-xl group"
-                                                >
-                                                    <span className="absolute inset-0 bg-primary-dark1 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-xl" />
-                                                    <span className="relative z-10">{t.download.download}</span>
-                                                </motion.button>
-                                            )}
-                                        </AnimatePresence>
+                                                        key="done"
+                                                        initial={{ scale: 0.8, opacity: 0 }}
+                                                        animate={{ scale: 1, opacity: 1 }}
+                                                        exit={{ scale: 0.8, opacity: 0 }}
+                                                        className="w-full flex items-center justify-center bg-green-500 text-white font-bold py-3 rounded-xl"
+                                                    >
+                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                    </motion.div>
+                                                ) : serverDownloading[index] ? (
+                                                    <motion.div key="loading" className="w-full relative bg-primary/10 rounded-xl overflow-hidden h-[44px]">
+                                                        <motion.div
+                                                            initial={{ height: '0%' }}
+                                                            animate={{ height: '100%' }}
+                                                            transition={{ duration: 2, ease: 'easeInOut' }}
+                                                            className="absolute bottom-0 left-0 right-0 bg-primary rounded-xl"
+                                                        />
+                                                        <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-sm z-10">
+                                                            <motion.span animate={{ opacity: [1, 0.5, 1] }} transition={{ duration: 1, repeat: Infinity }}>Downloading...</motion.span>
+                                                        </span>
+                                                    </motion.div>
+                                                ) : (
+                                                    <motion.button
+                                                        key="btn"
+                                                        onClick={() => handleServerDownload(index)}
+                                                        whileHover={{ scale: 1.03 }}
+                                                        whileTap={{ scale: 0.97 }}
+                                                        className="relative w-full overflow-hidden bg-primary text-white font-bold py-3 px-6 rounded-xl group"
+                                                    >
+                                                        <span className="absolute inset-0 bg-primary-dark1 translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-out rounded-xl" />
+                                                        <span className="relative z-10">{t.download.download}</span>
+                                                    </motion.button>
+                                                )}
+                                            </AnimatePresence>
+                                        ) : (
+                                            <button disabled className="w-full bg-lightGray text-gray font-bold py-3 px-6 rounded-xl cursor-not-allowed">
+                                                {t.download.comingSoon}
+                                            </button>
+                                        )}
                                     </div>
                                 </TiltCard>
                             </motion.div>
