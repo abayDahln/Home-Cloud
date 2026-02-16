@@ -113,9 +113,19 @@ Desktop.ini
 # AppImage & Linux Packaging
 # ----------------------------------------------------------------------
 **/*.AppImage
-**/AppImage.AppDir/
 **/appimagetool-*.AppImage
-**/AppDir/
+# Exclude AppDir *content* by default
+**/AppImage.AppDir/data/
+**/AppImage.AppDir/lib/
+**/AppImage.AppDir/home_cloud
+**/AppImage.AppDir/home_cloud_server
+**/AppImage.AppDir/server/
+# But allow the directory structure and specific files
+!**/AppImage.AppDir/
+!**/AppImage.AppDir/AppRun
+!**/AppImage.AppDir/AppImageFlutter.desktop
+!**/AppImage.AppDir/*.png
+
 
 # ----------------------------------------------------------------------
 # Installers (Inno Setup)

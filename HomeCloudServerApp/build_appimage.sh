@@ -153,6 +153,12 @@ if [ -f "${SCRIPT_DIR}/backend/.env.example" ] && [ ! -f "${APP_DIR}/server/.env
     echo "[INFO] .env config bundled."
 fi
 
+# Copy config.yml if available
+if [ -f "${SCRIPT_DIR}/backend/config.yml" ] && [ ! -f "${APP_DIR}/server/config.yml" ]; then
+    cp "${SCRIPT_DIR}/backend/config.yml" "${APP_DIR}/server/config.yml"
+    echo "[INFO] config.yml bundled."
+fi
+
 # Copy icon if not already there
 if [ ! -f "${APP_DIR}/app_logo_installer.png" ]; then
     if [ -f "${SCRIPT_DIR}/assets/icon/app_logo_installer.png" ]; then

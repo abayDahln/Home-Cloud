@@ -20,6 +20,16 @@ final serverDirProvider = StateProvider<String>((ref) {
   if (Directory(prodServerDir).existsSync()) {
     return prodServerDir;
   }
+
+  // macOS Bundle: check ../Resources/server
+  if (Platform.isMacOS) {
+    final resourcesServerDir =
+        p.normalize(p.join(exeDir, '..', 'Resources', 'server'));
+    if (Directory(resourcesServerDir).existsSync()) {
+      return resourcesServerDir;
+    }
+  }
+
   return exeDir;
 });
 

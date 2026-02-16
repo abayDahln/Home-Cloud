@@ -1,0 +1,7 @@
+#!/bin/bash
+SELF=$(readlink -f "$0")
+HERE=${SELF%/*}
+export PATH="${HERE}:${PATH}"
+export LD_LIBRARY_PATH="${HERE}/lib:${LD_LIBRARY_PATH}"
+cd "${HERE}"
+exec "./home_cloud_server" "$@"
