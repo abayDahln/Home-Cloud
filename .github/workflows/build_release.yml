@@ -1,0 +1,169 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          
+      - name: Install Inno Setup
+        run: |
+          choco install innosetup
+
+      # ------------------------------------------------------------------
+      # 1. Build HomeCloudApp (Client) - Windows
+      # ------------------------------------------------------------------
+      - name: Build HomeCloudApp (Client)
+        working-directory: HomeCloudApp
+        run: |
+          flutter pub get
+          flutter build windows --release
+
+      - name: Create Client Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "HomeCloudApp\installer\HomeCloudSetupScript.iss"
+
+      # ------------------------------------------------------------------
+      # 2. Build HomeCloudServerApp (Server) - Windows
+      # ------------------------------------------------------------------
+      - name: Build HomeCloudServerApp (Server)
+        working-directory: HomeCloudServerApp
+        run: |
+          flutter pub get
+          flutter build windows --release
+
+      - name: Build Go Backend (Windows)
+        working-directory: HomeCloudServerApp/backend
+        run: |
+          go mod tidy
+          go build -ldflags="-s -w" -o server.exe .
+
+      - name: Prepare Server Files
+        shell: powershell
+        run: |
+          $dest = "HomeCloudServerApp\build\windows\x64\runner\Release\server"
+          New-Item -ItemType Directory -Force -Path $dest
+          
+          # Copy Backend Executable
+          Copy-Item "HomeCloudServerApp\backend\server.exe" -Destination $dest -Force
+          
+          # Copy cloudflared if exists (Download if missing, but assuming repo has it)
+          if (Test-Path "HomeCloudServerApp\backend\cloudflared.exe") {
+            Copy-Item "HomeCloudServerApp\backend\cloudflared.exe" -Destination $dest -Force
+          } else {
+             Write-Host "Downloading cloudflared..."
+             Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "$dest\cloudflared.exe"
+          }
+
+          # Handle .env
+          if (Test-Path "HomeCloudServerApp\backend\.env") {
+            Copy-Item "HomeCloudServerApp\backend\.env" -Destination $dest -Force
+          } elseif (Test-Path "HomeCloudServerApp\backend\.env.example") {
+            Copy-Item "HomeCloudServerApp\backend\.env.example" -Destination "$dest\.env" -Force
+          }
+
+          # Copy config
+          if (Test-Path "HomeCloudServerApp\backend\config.yml") {
+            Copy-Item "HomeCloudServerApp\backend\config.yml" -Destination $dest -Force
+          }
+
+      - name: Create Server Installer
+        run: |
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "HomeCloudServerApp\installer\HomeCloudServerSetupScript.iss"
+
+      # ------------------------------------------------------------------
+      # Upload Artifacts
+      # ------------------------------------------------------------------
+      - name: Upload Windows Installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installers
+          path: |
+            HomeCloudApp/installer/Output/*.exe
+            HomeCloudServerApp/installer/Output/*.exe
+
+  build-linux:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install Linux Dependencies
+      - name: Install Linux Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev wget fuse
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          
+      # ------------------------------------------------------------------
+      # 1. Build HomeCloudApp (Client) - Linux
+      # ------------------------------------------------------------------
+      - name: Build HomeCloudApp (Client)
+        working-directory: HomeCloudApp
+        run: |
+          flutter pub get
+          flutter build linux --release
+          chmod +x build_appimage.sh
+          ./build_appimage.sh
+
+      # ------------------------------------------------------------------
+      # 2. Build HomeCloudServerApp (Server) - Linux
+      # ------------------------------------------------------------------
+      - name: Build HomeCloudServerApp (Server)
+        working-directory: HomeCloudServerApp
+        run: |
+          flutter pub get
+          flutter build linux --release
+
+      - name: Build Go Backend (Linux)
+        working-directory: HomeCloudServerApp/backend
+        run: |
+          go mod tidy
+          CGO_ENABLED=1 go build -ldflags="-s -w" -o linux/server_linux_amd64 .
+          
+          # Ensure cloudflared is present
+          if [ ! -f "linux/cloudflared" ]; then
+             echo "Downloading cloudflared..."
+             wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O linux/cloudflared
+             chmod +x linux/cloudflared
+          fi
+
+      - name: Create Server AppImage
+        working-directory: HomeCloudServerApp
+        run: |
+          chmod +x build_appimage.sh
+          ./build_appimage.sh
+
+      # ------------------------------------------------------------------
+      # Upload Artifacts
+      # ------------------------------------------------------------------
+      - name: Upload Linux AppImages
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimages
+          path: |
+            HomeCloudApp/*.AppImage
+            HomeCloudServerApp/*.AppImage

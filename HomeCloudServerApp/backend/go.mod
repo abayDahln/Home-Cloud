@@ -5,7 +5,6 @@ go 1.24.5
 require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/joho/godotenv v1.5.1
-	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/shirou/gopsutil/v3 v3.24.5
 	golang.org/x/sys v0.20.0
 )

@@ -1,28 +1,123 @@
-# IDEs
+# ----------------------------------------------------------------------
+# IDE & Editors
+# ----------------------------------------------------------------------
 .idea/
 .vscode/
 *.iml
 *.ipr
 *.iws
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
 
-# Build artifacts
+# ----------------------------------------------------------------------
+# Flutter / Dart
+# ----------------------------------------------------------------------
 **/build/
-**/linux/flutter/ephemeral/
-**/windows/flutter/ephemeral/
-**/macos/Flutter/ephemeral/
-
-# Dependencies
 **/.dart_tool/
 **/.flutter-plugins
 **/.flutter-plugins-dependencies
-**/pubspec.lock
-**/vendor/
+**/.pub-cache/
+**/.pub/
+**/doc/api/
+**/coverage/
+**/test/coverage/
+
+# Generated plugin registrants
+**/generated_plugin_registrant.dart
+
+# ----------------------------------------------------------------------
+# Flutter Platform specific
+# ----------------------------------------------------------------------
+# Android
+**/android/.gradle/
+**/android/captures/
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
+**/android/**/*.jks
+**/android/**/generated/
+**/android/**/gradle-wrapper.jar
+
+# iOS
+**/ios/Flutter/.last_build_id
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
+**/ios/Flutter/Generated.xcconfig
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/app.flx
+**/ios/Flutter/app.zip
+**/ios/Flutter/flutter_assets/
+**/ios/Flutter/flutter_export_environment.sh
+**/ios/ServiceDefinitions.json
+**/ios/Runner/GeneratedPluginRegistrant.*
+
+# macOS
+**/macos/Flutter/ephemeral/
+**/macos/Flutter/GeneratedPluginRegistrant.swift
+
+# Linux
+**/linux/flutter/ephemeral/
+**/linux/flutter/generated_plugin_registrant.cc
+**/linux/flutter/generated_plugin_registrant.h
+**/linux/flutter/generated_plugins.cmake
+
+# Windows
+**/windows/flutter/ephemeral/
+**/windows/flutter/generated_plugin_registrant.cc
+**/windows/flutter/generated_plugin_registrant.h
+**/windows/flutter/generated_plugins.cmake
+
+# ----------------------------------------------------------------------
+# Node.js / Web Installer
+# ----------------------------------------------------------------------
 **/node_modules/
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+**/dist/
+**/dist-ssr/
+*.local
 
-# OS files
-.DS_Store
-Thumbs.db
-
-# Backend
+# ----------------------------------------------------------------------
+# Go Backend (HomeCloudServerApp)
+# ----------------------------------------------------------------------
+# Binaries
 **/backend/server.exe
-**/*.env
+**/backend/server
+**/backend/server_linux_amd64
+**/backend/test.exe
+**/backend/test
+**/backend/fileserver.exe
+**/backend/fileserver
+
+# Third-party tools
+**/backend/cloudflared.exe
+**/backend/cloudflared
+**/backend/linux/cloudflared
+**/backend/linux/server_linux_amd64
+
+# Config & Environment
+**/backend/.env
+!**/backend/.env.example
+**/backend/config.yml
+**/backend/uploads/
+**/backend/storage/
+**/backend/tmp/
+
+# ----------------------------------------------------------------------
+# AppImage & Linux Packaging
+# ----------------------------------------------------------------------
+**/*.AppImage
+**/AppImage.AppDir/
+**/appimagetool-*.AppImage
+**/AppDir/
+
+# ----------------------------------------------------------------------
+# Installers (Inno Setup)
+# ----------------------------------------------------------------------
+**/installer/Output/

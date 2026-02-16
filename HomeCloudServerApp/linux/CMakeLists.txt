@@ -126,3 +126,47 @@ if(NOT CMAKE_BUILD_TYPE MATCHES "Debug")
   install(FILES "${AOT_LIBRARY}" DESTINATION "${INSTALL_BUNDLE_LIB_DIR}"
     COMPONENT Runtime)
 endif()
+
+# === Backend Installation ===
+install(CODE "
+  set(BACKEND_SRC_DIR \"${CMAKE_CURRENT_SOURCE_DIR}/../backend\")
+  set(SERVER_DEST_DIR \"${CMAKE_INSTALL_PREFIX}/server\")
+  
+  # Ensure destination exists
+  file(MAKE_DIRECTORY \"\${SERVER_DEST_DIR}\")
+
+  # Copy server binary
+  if(EXISTS \"\${BACKEND_SRC_DIR}/linux/server\")
+    message(STATUS \"Bundling server binary (server)...\")
+    file(INSTALL DESTINATION \"\${SERVER_DEST_DIR}\" 
+         TYPE FILE 
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
+         FILES \"\${BACKEND_SRC_DIR}/linux/server\")
+  elseif(EXISTS \"\${BACKEND_SRC_DIR}/linux/server_linux_amd64\")
+    message(STATUS \"Bundling server binary (server_linux_amd64)...\")
+    # Install as 'server' to keep things consistent
+    file(INSTALL DESTINATION \"\${SERVER_DEST_DIR}\" 
+         TYPE FILE 
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
+         RENAME \"server\"
+         FILES \"\${BACKEND_SRC_DIR}/linux/server_linux_amd64\")
+  else()
+    message(WARNING \"Backend server binary not found at \${BACKEND_SRC_DIR}/linux/server or server_linux_amd64. App may not function correctly.\")
+  endif()
+
+  # Copy cloudflared binary
+  if(EXISTS \"\${BACKEND_SRC_DIR}/linux/cloudflared\")
+    message(STATUS \"Bundling cloudflared binary...\")
+    file(INSTALL DESTINATION \"\${SERVER_DEST_DIR}\" 
+         TYPE FILE 
+         PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE 
+         FILES \"\${BACKEND_SRC_DIR}/linux/cloudflared\")
+  endif()
+
+  # Copy .env.example to .env
+  if(EXISTS \"\${BACKEND_SRC_DIR}/.env.example\")
+    message(STATUS \"Bundling .env config...\")
+    file(COPY \"\${BACKEND_SRC_DIR}/.env.example\" DESTINATION \"\${SERVER_DEST_DIR}\")
+    file(RENAME \"\${SERVER_DEST_DIR}/.env.example\" \"\${SERVER_DEST_DIR}/.env\")
+  endif()
+" COMPONENT Runtime)

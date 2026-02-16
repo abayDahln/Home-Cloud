@@ -1526,7 +1526,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Icon(Icons.error_outline, color: Colors.orangeAccent),
             const SizedBox(width: 12),
             const Text('Linux Error',
-                style: TextStyle(color: Colors.white, fontFamily: 'Plus Jakarta Sans')),
+                style: TextStyle(
+                    color: Colors.white, fontFamily: 'Plus Jakarta Sans')),
           ],
         ),
         content: Column(
@@ -1536,13 +1537,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text(
               'The file picker requires "$dependency" to be installed on your Linux system/WSL.',
               style: const TextStyle(
-                  color: Colors.white70, fontSize: 14, fontFamily: 'Plus Jakarta Sans'),
+                  color: Colors.white70,
+                  fontSize: 14,
+                  fontFamily: 'Plus Jakarta Sans'),
             ),
             const SizedBox(height: 16),
             const Text(
               'Run this command in your terminal:',
               style: TextStyle(
-                  color: Colors.white54, fontSize: 12, fontFamily: 'Plus Jakarta Sans'),
+                  color: Colors.white54,
+                  fontSize: 12,
+                  fontFamily: 'Plus Jakarta Sans'),
             ),
             const SizedBox(height: 8),
             Container(
@@ -1555,7 +1560,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               child: SelectableText(
                 'sudo apt update && sudo apt install -y $dependency',
                 style: const TextStyle(
-                    color: Colors.greenAccent, fontSize: 12, fontFamily: 'monospace'),
+                    color: Colors.greenAccent,
+                    fontSize: 12,
+                    fontFamily: 'monospace'),
               ),
             ),
           ],
@@ -1564,7 +1571,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Close',
-                style: TextStyle(color: Colors.white54, fontFamily: 'Plus Jakarta Sans')),
+                style: TextStyle(
+                    color: Colors.white54, fontFamily: 'Plus Jakarta Sans')),
           ),
         ],
       ),
@@ -2217,12 +2225,12 @@ class _FileItemBase extends ConsumerWidget {
           ? [
               _buildPopupItem(Icons.drive_file_move_outlined, 'Move Selected',
                   () {
-                final parent = p.dirname(file.path);
+                final parent = p.url.dirname(file.path);
                 handleBulkMove(context, ref, parent == '.' ? '' : parent);
               }),
               _buildPopupItem(Icons.delete_outline_rounded, 'Delete Selected',
                   () {
-                final parent = p.dirname(file.path);
+                final parent = p.url.dirname(file.path);
                 handleBulkDelete(context, ref, parent == '.' ? '' : parent);
               }, isDestructive: true),
             ]
@@ -2303,14 +2311,12 @@ class _FileItemBase extends ConsumerWidget {
             }
           }
 
-          final parentPath =
-              file.path.substring(0, file.path.lastIndexOf(file.name));
-          final newPath = '$parentPath$finalName';
+          final parent = p.url.dirname(file.path);
+          final newPath = p.url.join(parent, finalName);
 
-          final success = await ref
+          await ref
               .read(fileOpsProvider.notifier)
               .renameItem(file.path, newPath);
-          if (success) ref.invalidate(fileListProvider);
         }
       },
     );
