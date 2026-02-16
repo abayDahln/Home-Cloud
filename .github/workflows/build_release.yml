@@ -122,7 +122,7 @@ jobs:
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev wget fuse
+          sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev wget fuse libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libmpv-dev
 
       - uses: subosito/flutter-action@v2
         with:
