@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  # ===========================================================================
+  # WINDOWS BUILDS
+  # ===========================================================================
   build-windows:
+    name: Build Windows (Client & Server)
     runs-on: windows-latest
     permissions:
       contents: write
@@ -35,8 +39,9 @@ jobs:
           flutter build windows --release
 
       - name: Create Client Installer
+        working-directory: HomeCloudApp
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "HomeCloudApp\installer\HomeCloudSetupScript.iss"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\HomeCloudSetupScript.iss"
 
       # ------------------------------------------------------------------
       # 2. Build HomeCloudServerApp (Server) - Windows
@@ -67,7 +72,11 @@ jobs:
             Copy-Item "HomeCloudServerApp\backend\cloudflared.exe" -Destination $dest -Force
           } else {
              Write-Host "Downloading cloudflared..."
-             Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "$dest\cloudflared.exe"
+             try {
+                Invoke-WebRequest -Uri "https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe" -OutFile "$dest\cloudflared.exe"
+             } catch {
+                Write-Host "Failed to download cloudflared, skipping..."
+             }
           }
 
           # Handle .env
@@ -81,14 +90,16 @@ jobs:
           if (Test-Path "HomeCloudServerApp\backend\config.yml") {
             Copy-Item "HomeCloudServerApp\backend\config.yml" -Destination $dest -Force
           }
+          
+          # Copy uploads folder structure
+          $uploadsPath = "$dest\uploads"
+          New-Item -ItemType Directory -Force -Path $uploadsPath
 
       - name: Create Server Installer
+        working-directory: HomeCloudServerApp
         run: |
-          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "HomeCloudServerApp\installer\HomeCloudServerSetupScript.iss"
+          & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\HomeCloudServerSetupScript.iss"
 
-      # ------------------------------------------------------------------
-      # Upload Artifacts
-      # ------------------------------------------------------------------
       - name: Upload Windows Installers
         uses: actions/upload-artifact@v4
         with:
@@ -97,14 +108,17 @@ jobs:
             HomeCloudApp/installer/Output/*.exe
             HomeCloudServerApp/installer/Output/*.exe
 
+  # ===========================================================================
+  # LINUX BUILDS
+  # ===========================================================================
   build-linux:
+    name: Build Linux (Client & Server)
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
 
-      # Install Linux Dependencies
       - name: Install Linux Dependencies
         run: |
           sudo apt-get update
@@ -147,6 +161,7 @@ jobs:
           # Ensure cloudflared is present
           if [ ! -f "linux/cloudflared" ]; then
              echo "Downloading cloudflared..."
+             mkdir -p linux
              wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64 -O linux/cloudflared
              chmod +x linux/cloudflared
           fi
@@ -157,9 +172,6 @@ jobs:
           chmod +x build_appimage.sh
           ./build_appimage.sh
 
-      # ------------------------------------------------------------------
-      # Upload Artifacts
-      # ------------------------------------------------------------------
       - name: Upload Linux AppImages
         uses: actions/upload-artifact@v4
         with:
@@ -167,3 +179,161 @@ jobs:
           path: |
             HomeCloudApp/*.AppImage
             HomeCloudServerApp/*.AppImage
+
+  # ===========================================================================
+  # ANDROID BUILD (Client Only)
+  # ===========================================================================
+  build-android:
+    name: Build Android (Client)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Build APK (Client)
+        working-directory: HomeCloudApp
+        run: |
+          flutter pub get
+          flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: HomeCloudApp/build/app/outputs/flutter-apk/app-release.apk
+
+  # ===========================================================================
+  # iOS BUILD (Client Only)
+  # ===========================================================================
+  build-ios:
+    name: Build iOS (Client)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Build iOS (No Codesign)
+        working-directory: HomeCloudApp
+        run: |
+          flutter pub get
+          flutter build ios --release --no-codesign
+
+      - name: Archive iOS App
+        run: |
+          cd HomeCloudApp/build/ios/iphoneos
+          mkdir Payload
+          cp -r Runner.app Payload
+          zip -r HomeCloudApp-iOS.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-ipa
+          path: HomeCloudApp/build/ios/iphoneos/HomeCloudApp-iOS.ipa
+
+  # ===========================================================================
+  # MACOS BUILD (Server Only)
+  # ===========================================================================
+  build-macos:
+    name: Build macOS (Server)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          
+      - name: Install create-dmg
+        run: brew install create-dmg
+
+      # ------------------------------------------------------------------
+      # Build Server App
+      # ------------------------------------------------------------------
+      - name: Build macOS App
+        working-directory: HomeCloudServerApp
+        run: |
+          flutter pub get
+          flutter config --enable-macos-desktop
+          flutter build macos --release
+
+      # ------------------------------------------------------------------
+      # Prepare Backend for macOS
+      # ------------------------------------------------------------------
+      - name: Build Backend & Prepare Assets
+        working-directory: HomeCloudServerApp/backend
+        run: |
+          # Build Go Binary
+          go mod tidy
+          CGO_ENABLED=1 go build -ldflags="-s -w" -o server_binary .
+          
+          # Download cloudflared
+          wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-darwin-amd64.tgz
+          tar -xzf cloudflared-darwin-amd64.tgz
+          mv cloudflared cloudflared_binary
+          
+          # Define App Bundle Resources Path
+          APP_RESOURCES="../build/macos/Build/Products/Release/HomeCloudServerApp.app/Contents/Resources"
+          SERVER_DIR="$APP_RESOURCES/server"
+          mkdir -p "$SERVER_DIR"
+          
+          # Copy Binaries
+          cp server_binary "$SERVER_DIR/server"
+          cp cloudflared_binary "$SERVER_DIR/cloudflared"
+          chmod +x "$SERVER_DIR/server"
+          chmod +x "$SERVER_DIR/cloudflared"
+          
+          # Copy Config & Env
+          if [ -f ".env" ]; then
+            cp .env "$SERVER_DIR/.env"
+          elif [ -f ".env.example" ]; then
+            cp .env.example "$SERVER_DIR/.env"
+          fi
+          
+          if [ -f "config.yml" ]; then
+            cp config.yml "$SERVER_DIR/config.yml"
+          fi
+          
+          mkdir -p "$SERVER_DIR/uploads"
+
+      # ------------------------------------------------------------------
+      # Package as DMG
+      # ------------------------------------------------------------------
+      - name: Create DMG
+        working-directory: HomeCloudServerApp
+        run: |
+          APP_NAME="HomeCloudServerApp"
+          APP_PATH="build/macos/Build/Products/Release/$APP_NAME.app"
+          DMG_NAME="HomeCloudServer-macOS.dmg"
+          
+          create-dmg \
+            --volname "HomeCloud Installer" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "$APP_NAME.app" 200 190 \
+            --hide-extension "$APP_NAME.app" \
+            --app-drop-link 600 185 \
+            "$DMG_NAME" \
+            "$APP_PATH"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-server-dmg
+          path: HomeCloudServerApp/HomeCloudServer-macOS.dmg
