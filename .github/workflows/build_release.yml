@@ -100,13 +100,17 @@ jobs:
         run: |
           & "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "installer\HomeCloudServerSetupScript.iss"
 
-      - name: Upload Windows Installers
+      - name: Upload HomeCloudServerApp-Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installers
-          path: |
-            HomeCloudApp/installer/Output/*.exe
-            HomeCloudServerApp/installer/Output/*.exe
+          name: HomeCloudServerApp-Windows
+          path: HomeCloudServerApp/installer/Output/*.exe
+
+      - name: Upload HomeCloudApp-Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: HomeCloudApp-Windows
+          path: HomeCloudApp/installer/Output/*.exe
 
   # ===========================================================================
   # LINUX BUILDS
@@ -172,13 +176,17 @@ jobs:
           chmod +x build_appimage.sh
           ./build_appimage.sh
 
-      - name: Upload Linux AppImages
+      - name: Upload HomeCloudServerApp-Linux AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: linux-appimages
-          path: |
-            HomeCloudApp/*.AppImage
-            HomeCloudServerApp/*.AppImage
+          name: HomeCloudServerApp-Linux
+          path: HomeCloudServerApp/*.AppImage
+
+      - name: Upload HomeCloudApp-Linux AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: HomeCloudApp-Linux
+          path: HomeCloudApp/*.AppImage
 
   # ===========================================================================
   # ANDROID BUILD (Client Only)
@@ -204,10 +212,10 @@ jobs:
           flutter pub get
           flutter build apk --release
 
-      - name: Upload APK
+      - name: Upload HomeCloudApp-Android APK
         uses: actions/upload-artifact@v4
         with:
-          name: android-apk
+          name: HomeCloudApp-Android
           path: HomeCloudApp/build/app/outputs/flutter-apk/app-release.apk
 
   # ===========================================================================
@@ -236,10 +244,10 @@ jobs:
           cp -r Runner.app Payload
           zip -r HomeCloudApp-iOS.ipa Payload
 
-      - name: Upload IPA
+      - name: Upload HomeCloudApp-iOS IPA
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
+          name: HomeCloudApp-iOS
           path: HomeCloudApp/build/ios/iphoneos/HomeCloudApp-iOS.ipa
 
   # ===========================================================================
@@ -332,8 +340,8 @@ jobs:
             "$DMG_NAME" \
             "$APP_PATH"
 
-      - name: Upload DMG
+      - name: Upload HomeCloudServerApp-macOS DMG
         uses: actions/upload-artifact@v4
         with:
-          name: macos-server-dmg
+          name: HomeCloudServerApp-macOS
           path: HomeCloudServerApp/HomeCloudServer-macOS.dmg
